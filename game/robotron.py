@@ -6,10 +6,10 @@ from .engine import Engine
 
 class Robotron:
 
-    def __init__(self):
+    def __init__(self, level = 1, fps = 30):
         (top, left, bottom, right) = config.PLAY_AREA
         self.playArea = pygame.Rect(left, top, right - left, bottom - top)
-        self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, 3, 30)
+        self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, level, fps)
 
     def reset(self):
         self.engine.reset()
