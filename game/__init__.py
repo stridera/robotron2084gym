@@ -1,1 +1,1 @@
-from .game import Robotron
+from .robotron import Robotron

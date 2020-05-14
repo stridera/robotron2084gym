@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+r"""
+  ______  _____  ______   _____  _______  ______  _____  __   _
+ |_____/ |     | |_____] |     |    |    |_____/ |     | | \  |
+ |    \_ |_____| |_____] |_____|    |    |    \_ |_____| |  \_|
+
+    This file allows humans to play the game.
+"""
+
+
 import pygame
 from pygame.locals import KEYDOWN, QUIT, K_ESCAPE, K_q, K_RETURN, K_a, K_s, K_d, K_w, K_j, K_k, K_l, K_i
 

@@ -4,13 +4,14 @@ from ..sprites import Sprites
 
 
 class Engine:
-    def __init__(self, screen_size, playRect, waveInfo, startLevel=1):
+    def __init__(self, screen_size, playRect, waveInfo, startLevel=1, fps=0):
         self.playRect = playRect
         self.waveInfo = waveInfo
         self.defaultStartingLevel = startLevel - 1
         self.score = 0
         self.level = startLevel
         self.lives = 3
+        self.fps = fps
 
         pygame.init()
         pygame.display.set_caption('Robotron')
@@ -130,7 +131,7 @@ class Engine:
 
     def update(self):
         pygame.event.pump()
-        self.clock.tick(30)
+        self.clock.tick(self.fps)
 
         if self.lives > 0:
             self.allGroup.update()
