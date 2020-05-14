@@ -44,7 +44,8 @@ fps = 30
 env = robotron.Robotron(level, fps)
 ```
 
-**Optional Parameters**
+**Optional Parameters:**
+
 *level* - Default: 1
 Specifies the level to start at.  Useful for training a level the agent has a particularly hard time at.
 
@@ -65,13 +66,15 @@ image = env.reset()
 #### `step()`
 Play one action on the env.
 
-**Parameters**
+**Parameters:**
+
 *action* - int between 0 and 64 (8 * 8)
 This should be a integer that combines the two stick controls.  You can either have a single agent that outputs 64, or you can have one agent for movement and one for shooting and construct it by doing the following:
 ```python
 action = left * 8 + right
 ```
-**Returns**
+**Returns:**
+
 *image, reward, done, info*
 
 - *Image*: The current frame of the game.  Need to crop out the play area.  Done this way to maintain parity with reading from the hdmi from the xbox.
@@ -86,6 +89,7 @@ image, reward, done, info = env.step(action)
 
 ## Notes
 * There are no effect yet. You probably want to turn it to grayscale anyway, so it won't matter, but this is a post processing step you should do before sending it to your agent.
+* Reward is currently just the score.  I'll probably change this later to make it better score related and return score in the info.
 
 
 ## Todo
@@ -111,6 +115,6 @@ image, reward, done, info = env.step(action)
 - [ ] Add warp-in/warp-out effects.
 
 ## Attributions and Thanks
-Robotron 2084.  Developed by Eugene Jarvis and Larry DeMar.  Published by Williams Electronics.
-Sprite Sheet and definitions are from [Sean Riddle's Ripper page](https://seanriddle.com/ripper.html).
-Notes, score info, etc from [IGN's Robotron 2084 FAQ](https://www.ign.com/faqs/2005/robotron-2084-general-faq-430788)
+- Robotron 2084.  Developed by Eugene Jarvis and Larry DeMar.  Published by Williams Electronics.
+- Sprite Sheet and definitions are from [Sean Riddle's Ripper page](https://seanriddle.com/ripper.html).
+- Notes, score info, etc from [IGN's Robotron 2084 FAQ](https://www.ign.com/faqs/2005/robotron-2084-general-faq-430788)
