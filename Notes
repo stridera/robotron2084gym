@@ -1,0 +1,125 @@
+Enemies:
++----------------------------------------------+
+| GRUNT (GROUND ROVING UNIT NETWORK TERMINATOR |
++----------------------------------------------+
+
+         Score:  100 points
+  Missile Type:  NONE
+Characteristic:  These are the red robots.  Although they don't fire, they
+                 overwhelm your man by sheer numbers.
+
++------+
+| HULK |
++------+
+
+         Score:  N/A
+  Missile Type:  NONE
+Characteristic:  The are the big green robots.  They are indestructible and
+                 there main purpose is to kill the humans.
+
++-------+
+| BRAIN |
++-------+
+
+         Score:  500 points
+  Missile Type:  "Snake-like" homing missile worth 25 points
+Characteristic:  These are the robots that are blue and have really large
+                 heads.  They "re-program" the humans into evil Progs who home
+                 in on your character.  The Progs are worth 100 points.
+
++----------+
+| SPHEROID |
++----------+
+
+         Score:  1000 points
+  Missile Type:  NONE
+Characteristic:  These are the red circles that travel around the game screen.
+                 They are the transports for the Enforcer robots.
+
++----------+
+| ENFORCER |
++----------+
+
+         Score:  150 points
+  Missile Type:  A semi-guided mine that looks like a six-point star worth 25
+                 points
+Characteristic:  These are the blue, "Robby the Robot" looking robots.  They
+                 tend to congregate in the corners of the game field.
+
++=------+
+| QUARK |
++-------+
+
+         Score:  1000 points
+  Missile Type:  NONE
+Characteristic:  The white boxes with an "X" in the middle that travel around
+                 the game screen.  They are the transports for the Tanks.
+
++------+
+| TANK |
++------+
+
+         Score:  200 points
+  Missile Type:  Bouncing bomb worth 25 points
+Characteristic:  These are the red robots that have tracked wheels underneath
+                 them hence making them look like tanks.
+
++----------------+
+| FAMILY MEMBERS |
++----------------+
+
+You get 1000 for the first human rescued. Then it will progress at 2000, 3000,
+4000, then 5000 for every human rescued after that.  This will last the entire
+wave or until you get killed.  If you get killed or go to a new wave, then the
+progression starts at 1000 again.
+
+You start the game with 3 men and receive and additional man for every 25,000
+points you get.
+
+
+
+Robotron is hardcoded with 40 unique waves.
+After wave 40 the game goes back to the enemy counts from Wave 21. (Wave 41 enemies= Wave 21 enemies)
+Wave 21 is the same as wave 41, 61, 81, etc.
+Wave 40 is the same as wave 60, 80, 100, 120, 140, 160, 180, 200, 220, 240
+Wave 55 is the same as wave 35, 75, 95, 115, 135, 155, 175, 195, 215, 235, 255
+
+
+
+The waves (or levels) in Robotron 2084 are set up in a definite pattern.  Once
+you understand that pattern, you will be better prepared to deal with the
+enemies that the game throws at you.  Here is how the waves are set up.
+
+-  The SPHEROIDS make their appearance on the 2nd wave and every wave thereafter.
+
+-  Starting at the 5th wave and every 5 waves thereafter (i.e. 5, 10, 15, 20,
+   etc.) is a BRAIN robot wave.  These are also the waves you can amass a large
+   amount of points due to all the humans you have to rescue.
+
+-  Starting at the 7th wave and every 5 waves thereafter (i.e. 7, 12, 17, 22,
+   etc.) the TANKS will make their appearance.
+
+-  Starting at the 9th wave and every 5 waves thereafter (i.e. 9, 14, 19, 24,
+   etc.) you will have one of three alternating enemies to deal with.
+
+   -  On the 9th wave and every 10 waves thereafter (i.e. 9, 19, 29, 39, etc.)
+      you will have the "GRUNT" waves.  These waves put you right in the middle
+      of a large number of GRUNT robots.  In addition, the lit side edges are
+      removed to make the field look bigger.
+
+   -  On the 14th wave and every 20 waves thereafter (i.e. 14, 34, 54, etc.)
+      you will have the HULK waves.  These waves put you right in the middle of
+      a large number of HULK robots.
+
+   -  On the 24th wave and every 20 waves thereafter (i.e. 24, 44, 64, etc.)
+      you will have a combination TANK/ENFORCER wave.  These waves have you in
+      the middle of large numbers of SPHEROIDS and QUARKS before they deposit
+      their ENFORCER and TANK robots.
+
+-  On wave 28 and each wave thereafter, you will get a combination of SPHEROIDS
+   and QUARKS depositing their ENFORCER and TANK robots.  Before this, it was
+   only the SPEROIDS depositing their ENFORCER robots to make your life
+   miserable.
+
+-  These progressions will continue until you hit wave 255.  After that, the
+   waves roll back over to wave 1 and you start the cycle again.
