@@ -12,7 +12,7 @@ r"""
 import pygame
 from pygame.locals import KEYDOWN, QUIT, K_ESCAPE, K_q, K_RETURN, K_a, K_s, K_d, K_w, K_j, K_k, K_l, K_i
 
-import game
+import robotron
 
 
 class Input():
@@ -170,7 +170,7 @@ class Input():
 
 
 def main():
-    env = game.Robotron()
+    env = robotron.Robotron()
     input = Input()
 
     image = env.reset()
