@@ -48,7 +48,7 @@ class Bullet(pygame.sprite.Sprite):
         if killed:
             sprite = killed[0]
             self.engine.add_score(sprite.get_score())
-            sprite.kill()
+            sprite.die()
             self.kill()
 
         if not self.playRect.contains(self.rect):

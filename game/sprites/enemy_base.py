@@ -10,17 +10,24 @@ class Enemy(pygame.sprite.Sprite):
         self.playRect = engine.get_play_area()
         self.engine = engine
         self.score = 0
-        self.moveSpeed = 5
-
+        self.moveSpeed = 0
         self.animationStep = 0
         self.image = self.animations[self.animationStep]
 
         self.random_location()
 
     def update(self):
+        pass
+
+    def move(self):
         self.animationStep += 1
         if self.animationStep >= len(self.animations):
             self.animationStep = 0
+
+        self.image = self.animations[self.animationStep]
+
+    def die(self):
+        self.kill()
 
     def zero(self):
         self.rect.x = -100

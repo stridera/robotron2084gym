@@ -4,6 +4,7 @@ from .graphics import Graphics
 
 from .player import Player
 from .grunt import Grunt
+from .electrode import Electrode
 
 
 class Sprites:
@@ -17,3 +18,6 @@ class Sprites:
 
     def Grunt(self):
         return Grunt(self.sprites, self.engine)
+
+    def Electrode(self):
+        return Electrode(self.sprites, self.engine)

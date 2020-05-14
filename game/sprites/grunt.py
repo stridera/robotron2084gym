@@ -22,28 +22,30 @@ class Grunt(Enemy):
         self.moveDelayMin = 5
         self.moveDelayRemaining = random.randrange(self.moveDelayMin, self.moveDelayMax)
 
-    def update(self):
+    def move(self):
         """ Grunts move toward the player """
-        super().update()
+        super().move()
+        player_vec = pygame.Vector2(self.engine.player.rect.center)
+        my_vec = pygame.Vector2(self.rect.center)
+
+        _, angle = (my_vec - player_vec).as_polar()  # returns angle with 0 as to the right
+
+        if abs(angle) <= 45:  # Right
+            self.rect.x -= self.moveSpeed
+
+        if abs(angle) >= 135:  # Left
+            self.rect.x += self.moveSpeed
+
+        if angle >= 45 and angle <= 135:
+            self.rect.y -= self.moveSpeed
+
+        if angle <= -45 and angle >= -135:
+            self.rect.y += self.moveSpeed
+
+    def update(self):
 
         if self.moveDelayRemaining <= 0:
-            player_vec = pygame.Vector2(self.engine.player.rect.center)
-            my_vec = pygame.Vector2(self.rect.center)
-
-            _, angle = (my_vec - player_vec).as_polar()  # returns angle with 0 as to the right
-
-            if abs(angle) <= 45:  # Right
-                self.rect.x -= self.moveSpeed
-
-            if abs(angle) >= 135:  # Left
-                self.rect.x += self.moveSpeed
-
-            if angle >= 45 and angle <= 135:
-                self.rect.y -= self.moveSpeed
-
-            if angle <= -45 and angle >= -135:
-                self.rect.y += self.moveSpeed
-
+            self.move()
             self.moveDelayRemaining = random.randrange(self.moveDelayMin, self.moveDelayMax)
         else:
             self.moveDelayRemaining -= 1

@@ -42,6 +42,22 @@ class Engine:
 
     # State Management
 
+    def initialize_level(self):
+        for sprite in self.allGroup:
+            sprite.kill()
+
+        self.player = self.sprites.Player()
+        self.add_player(self.player)
+
+        levelData = self.waveInfo[self.level]
+        (grunts, electrodes, hulks, brains, sphereoids, quarks, mommies, daddies, mikeys) = levelData
+
+        for _ in range(grunts):
+            self.add_enemy(self.sprites.Grunt())
+
+        for _ in range(electrodes):
+            self.add_enemy(self.sprites.Electrode())
+
     def add_score(self, score):
         self.score += score
 
@@ -57,19 +73,6 @@ class Engine:
 
     def get_play_area(self):
         return self.playRect
-
-    def initialize_level(self):
-        for sprite in self.allGroup:
-            sprite.kill()
-
-        self.player = self.sprites.Player()
-        self.add_player(self.player)
-
-        levelData = self.waveInfo[self.level]
-        (grunts, electrodes, hulks, brains, sphereoids, quarks, mommies, daddies, mikeys) = levelData
-
-        for _ in range(grunts):
-            self.add_enemy(self.sprites.Grunt())
 
     def get_player_group(self):
         return self.playerGroup

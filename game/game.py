@@ -9,7 +9,7 @@ class Robotron:
     def __init__(self):
         (top, left, bottom, right) = config.PLAY_AREA
         self.playArea = pygame.Rect(left, top, right - left, bottom - top)
-        self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, 1)
+        self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, 3)
 
     def reset(self):
         self.engine.reset()
