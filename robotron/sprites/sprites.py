@@ -6,6 +6,7 @@ from .player import Player
 from .family import Mommy, Daddy, Mikey
 from .grunt import Grunt
 from .electrode import Electrode
+from .hulk import Hulk
 
 
 class Sprites:
@@ -31,3 +32,6 @@ class Sprites:
 
     def Electrode(self):
         return Electrode(self.sprites, self.engine)
+
+    def Hulk(self):
+        return Hulk(self.sprites, self.engine)

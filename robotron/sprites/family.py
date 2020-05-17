@@ -54,13 +54,10 @@ class Family(Base):
         self.deathDelay = 15
 
         self.moveDirection = random.randrange(1, 8)
+        self.random_location()
 
     def valid_move(self, direction):
-        vector = self.get_vector(direction)
-        test = self.rect.copy()
-        test.center += vector
-
-        if not self.inside(test):
+        if not super().valid_move(direction):
             return False
 
         for sprite in self.engine.get_enemy_group():
@@ -102,7 +99,7 @@ class Family(Base):
 
     def die(self):
         if self.alive:
-            image = self.deathImage
+            self.image = self.deathImage
             self.alive = False
 
     def update(self):

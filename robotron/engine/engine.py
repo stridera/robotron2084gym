@@ -73,6 +73,9 @@ class Engine:
         for _ in range(electrodes):
             self.add_enemy(self.sprites.Electrode())
 
+        for _ in range(hulks):
+            self.add_enemy(self.sprites.Hulk())
+
     def add_score(self, score):
         self.score += score
 

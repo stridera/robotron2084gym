@@ -170,7 +170,8 @@ class Input():
 
 
 def main():
-    env = robotron.Robotron()
+    level = 1
+    env = robotron.Robotron(level)
     input = Input()
 
     image = env.reset()

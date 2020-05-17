@@ -3,6 +3,26 @@ import random
 
 
 class Base(pygame.sprite.Sprite):
+    UP = 1
+    UP_RIGHT = 2
+    RIGHT = 3
+    DOWN_RIGHT = 4
+    DOWN = 5
+    DOWN_LEFT = 6
+    LEFT = 7
+    UP_LEFT = 8
+
+    REVERSE_DIR = [
+        0,
+        DOWN,
+        DOWN_LEFT,
+        LEFT,
+        UP_LEFT,
+        UP,
+        UP_RIGHT,
+        RIGHT,
+        DOWN_RIGHT
+    ]
 
     def __init__(self, sprites, engine):
         super().__init__()
@@ -18,33 +38,56 @@ class Base(pygame.sprite.Sprite):
 
         self.animationStep = 0
         self.animationDirection = None
-        self.image = self.get_animations()[self.animationStep]
 
-        self.random_location()
+        if sprites:
+            self.image = self.get_animations()[self.animationStep]
 
     def update(self):
         pass
 
-    def get_vector(self, dir):
-        if dir == 0:
+    def get_vector(self, direction, speed=None):
+        speed = speed or self.moveSpeed
+        if direction == 0:
             return pygame.math.Vector2(0)
-        elif dir == 1:
-            return pygame.math.Vector2(0, -self.moveDelay)
-        elif dir == 2:
-            return pygame.math.Vector2(self.moveDelay, -self.moveDelay)
-        elif dir == 3:
-            return pygame.math.Vector2(self.moveDelay, 0)
-        elif dir == 4:
-            return pygame.math.Vector2(self.moveDelay, self.moveDelay)
-        elif dir == 5:
-            return pygame.math.Vector2(0, self.moveDelay)
-        elif dir == 6:
-            return pygame.math.Vector2(-self.moveDelay, self.moveDelay)
-        elif dir == 7:
-            return pygame.math.Vector2(-self.moveDelay, 0)
-        elif dir == 8:
-            return pygame.math.Vector2(-self.moveDelay, -self.moveDelay)
+        elif direction == self.UP:
+            return pygame.math.Vector2(0, -speed)
+        elif direction == self.UP_RIGHT:
+            return pygame.math.Vector2(speed, -speed)
+        elif direction == self.RIGHT:
+            return pygame.math.Vector2(speed, 0)
+        elif direction == self.DOWN_RIGHT:
+            return pygame.math.Vector2(speed, speed)
+        elif direction == self.DOWN:
+            return pygame.math.Vector2(0, speed)
+        elif direction == self.DOWN_LEFT:
+            return pygame.math.Vector2(-speed, speed)
+        elif direction == self.LEFT:
+            return pygame.math.Vector2(-speed, 0)
+        elif direction == self.UP_LEFT:
+            return pygame.math.Vector2(-speed, -speed)
         raise UnboundLocalError
+
+    def get_direction_string(self, direction):
+        direction_string = 'down'
+        if direction in [self.UP, self.UP_LEFT, self.UP_RIGHT]:
+            direction_string = 'up'
+        if direction in [self.DOWN, self.DOWN_LEFT, self.DOWN_RIGHT]:
+            direction_string = 'down'
+        if direction in [self.LEFT, self.UP_LEFT, self.DOWN_LEFT]:
+            direction_string = 'left'
+        if direction in [self.RIGHT, self.UP_RIGHT, self.DOWN_RIGHT]:
+            direction_string = 'right'
+        return direction_string
+
+    def valid_move(self, direction):
+        vector = self.get_vector(direction)
+        test = self.rect.copy()
+        test.center += vector
+
+        if not self.inside(test):
+            return False
+
+        return True
 
     def inside(self, rect):
         if rect.top <= self.playRect.top or rect.left <= self.playRect.left:
@@ -57,13 +100,14 @@ class Base(pygame.sprite.Sprite):
 
     def update_animation(self):
         animations = self.get_animations()
+
         self.animationStep += 1
         if self.animationStep >= len(animations):
             self.animationStep = 0
 
         self.image = animations[self.animationStep]
 
-    def die(self):
+    def die(self, sprite):
         self.kill()
 
     def zero(self):

@@ -22,6 +22,7 @@ class Grunt(Base):
         self.moveDelayMax = 25
         self.moveDelayMin = 5
         self.moveDelayRemaining = random.randrange(self.moveDelayMin, self.moveDelayMax)
+        self.random_location()
 
     def move(self):
         """ Grunts move toward the player """

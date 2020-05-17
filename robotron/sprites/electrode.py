@@ -30,6 +30,7 @@ class Electrode(Base):
 
         self.animations = animationLevels[level]
         super().__init__(sprites, engine)
+        self.random_location()
 
     def update(self):
         """
@@ -54,5 +55,5 @@ class Electrode(Base):
             else:
                 self.image = self.animations[self.animationStep]
 
-    def die(self):
+    def die(self, sprite):
         self.alive = False

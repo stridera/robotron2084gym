@@ -1,18 +1,11 @@
 import pygame
+from .sprite_base import Base
 
 
-class Bullet(pygame.sprite.Sprite):
-    UP = 1
-    UP_RIGHT = 2
-    RIGHT = 3
-    DOWN_RIGHT = 4
-    DOWN = 5
-    DOWN_LEFT = 6
-    LEFT = 7
-    UP_LEFT = 8
+class Bullet(Base):
 
     def __init__(self, engine, x, y, direction, playRect):
-        super().__init__()
+        super().__init__(None, engine)
         self.type = 'playerbullet'
         self.engine = engine
 
@@ -36,20 +29,14 @@ class Bullet(pygame.sprite.Sprite):
             pygame.draw.line(self.image, [255, 255, 255], (0, 0), (width, height), weight)
 
     def update(self):
-        if self.direction in [self.UP, self.UP_LEFT, self.UP_RIGHT]:
-            self.rect.y -= self.moveSpeed
-        if self.direction in [self.DOWN, self.DOWN_LEFT, self.DOWN_RIGHT]:
-            self.rect.y += self.moveSpeed
-        if self.direction in [self.LEFT, self.UP_LEFT, self.DOWN_LEFT]:
-            self.rect.x -= self.moveSpeed
-        if self.direction in [self.RIGHT, self.UP_RIGHT, self.DOWN_RIGHT]:
-            self.rect.x += self.moveSpeed
+        vector = self.get_vector(self.direction)
+        self.rect.center += vector
 
-        killed = pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False)
-        if killed:
-            sprite = killed[0]
+        hit = pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False)
+        if hit:
+            sprite = hit[0]
             self.engine.add_score(sprite.get_score())
-            sprite.die()
+            sprite.die(self)
             self.kill()
 
         if not self.playRect.contains(self.rect):
