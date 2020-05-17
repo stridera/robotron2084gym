@@ -11,6 +11,7 @@ class Engine:
         self.score = 0
         self.level = startLevel
         self.lives = 3
+        self.extraLives = 0
         self.fps = fps
 
         pygame.init()
@@ -22,6 +23,7 @@ class Engine:
         self.sprites = Sprites(self)
 
         self.playerGroup = pygame.sprite.Group()  # Player and their bullets
+        self.familyGroup = pygame.sprite.Group()  # Enemies and their bullets.
         self.enemyGroup = pygame.sprite.Group()  # Enemies and their bullets.
         self.toKillGroup = pygame.sprite.Group()  # Enemies that need to die to advance the level.
         self.allGroup = pygame.sprite.Group()  # All sprites on screen.
@@ -32,6 +34,8 @@ class Engine:
 
         self.player = None
         self.playerBox = None
+
+        self.familyCollected = 0
 
         self.initialize_level()
 
@@ -50,8 +54,18 @@ class Engine:
         self.player = self.sprites.Player()
         self.add_player(self.player)
 
+        self.familyCollected = 0
         levelData = self.waveInfo[self.level]
         (grunts, electrodes, hulks, brains, sphereoids, quarks, mommies, daddies, mikeys) = levelData
+
+        for _ in range(mommies):
+            self.add_family(self.sprites.Mommy())
+
+        for _ in range(daddies):
+            self.add_family(self.sprites.Daddy())
+
+        for _ in range(mikeys):
+            self.add_family(self.sprites.Mikey())
 
         for _ in range(grunts):
             self.add_enemy(self.sprites.Grunt())
@@ -65,6 +79,17 @@ class Engine:
     def get_score(self):
         return self.score
 
+    def family_collected(self):
+        """
+        You get 1000 for the first human rescued. Then it will progress at 2000, 3000,
+        4000, then 5000 for every human rescued after that.  This will last the entire
+        wave or until you get killed.  If you get killed or go to a new wave, then the
+        progression starts at 1000 again.
+        """
+        self.familyCollected += 1
+        self.score += min(self.familyCollected * 1000, 5000)
+        return self.familyCollected
+
     def set_level(self, level):
         self.level = level
         self.initialize_level()
@@ -77,6 +102,9 @@ class Engine:
 
     def get_player_group(self):
         return self.playerGroup
+
+    def get_family_group(self):
+        return self.familyGroup
 
     def get_enemy_group(self):
         return self.enemyGroup
@@ -97,7 +125,7 @@ class Engine:
 
     def add_background(self):
         self.screen.fill((0, 0, 0))
-        pygame.draw.rect(self.screen, [238, 5, 8], self.playRect, 5)
+        pygame.draw.rect(self.screen, [238, 5, 8], self.playRect.inflate(15, 15), 5)
         # pygame.draw.rect(self.screen, [5, 238, 8], self.get_player_box(), 5)
 
     def add_info(self):
@@ -114,8 +142,11 @@ class Engine:
         self.allGroup.add(player)
 
     def add_bullet(self, bullet):
-        self.playerGroup.add(bullet)
         self.allGroup.add(bullet)
+
+    def add_family(self, family):
+        self.familyGroup.add(family)
+        self.allGroup.add(family)
 
     def add_enemy(self, enemy):
         self.enemyGroup.add(enemy)
@@ -133,10 +164,16 @@ class Engine:
         pygame.event.pump()
         self.clock.tick(self.fps)
 
+        # You start the game with 3 men and receive and additional man for every 25,000 points you get.
+        if self.score // 25000 > self.extraLives:
+            self.lives += 1
+            self.extraLives += 1
+
         if self.lives > 0:
             self.allGroup.update()
 
             if pygame.sprite.spritecollide(self.player, self.enemyGroup, False):
+                self.familyCollected = 0
                 self.lives -= 1
                 if self.lives > 0:
                     for sprite in self.allGroup:
@@ -160,5 +197,6 @@ class Engine:
         self.score = 0
         self.level = self.defaultStartingLevel
         self.lives = 3
+        self.extraLives = 0
 
         self.initialize_level()

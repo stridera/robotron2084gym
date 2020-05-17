@@ -184,7 +184,7 @@ def main():
             if start:
                 env.reset()
 
-            action = left * 8 + right
+            action = left * 9 + right
             image, reward, done, info = env.step(action)
 
     except (KeyboardInterrupt):

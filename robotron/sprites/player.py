@@ -13,6 +13,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def __init__(self, engine, x, y, direction, playRect):
         super().__init__()
+        self.type = 'playerbullet'
         self.engine = engine
 
         width = height = 16
@@ -74,6 +75,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, sprites, engine):
         super().__init__()
 
+        self.type = 'player'
+
         self.playRect = engine.get_play_area()
         self.engine = engine
         self.moveSpeed = 5
@@ -128,7 +131,7 @@ class Player(pygame.sprite.Sprite):
 
             self._setAnimationDirection(dir)
             self.image = self.animations[self.animationDirection][self.animationStep]
-            self.rect = self.rect.clamp(self.playRect)
+            self.rect.clamp_ip(self.playRect)
 
     def shoot(self, shoot):
         if shoot:
@@ -139,6 +142,9 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.shootDelayRemaining -= 1
+
+        for sprite in pygame.sprite.spritecollide(self, self.engine.get_family_group(), False):
+            sprite.collected()
 
     def zero(self):
         pass

@@ -3,6 +3,7 @@ import pygame
 from .graphics import Graphics
 
 from .player import Player
+from .family import Mommy, Daddy, Mikey
 from .grunt import Grunt
 from .electrode import Electrode
 
@@ -15,6 +16,15 @@ class Sprites:
 
     def Player(self):
         return Player(self.sprites, self.engine)
+
+    def Mommy(self):
+        return Mommy(self.sprites, self.engine)
+
+    def Daddy(self):
+        return Daddy(self.sprites, self.engine)
+
+    def Mikey(self):
+        return Mikey(self.sprites, self.engine)
 
     def Grunt(self):
         return Grunt(self.sprites, self.engine)

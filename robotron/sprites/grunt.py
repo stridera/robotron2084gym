@@ -1,12 +1,13 @@
 import pygame
 import random
 
-from .enemy_base import Enemy
+from .sprite_base import Base
 
 
-class Grunt(Enemy):
+class Grunt(Base):
 
     def __init__(self, sprites, engine):
+        self.type = 'grunt'
         self.animations = [
             sprites['grunt1'],
             sprites['grunt2'],
@@ -24,7 +25,7 @@ class Grunt(Enemy):
 
     def move(self):
         """ Grunts move toward the player """
-        super().move()
+        self.update_animation()
         player_vec = pygame.Vector2(self.engine.player.rect.center)
         my_vec = pygame.Vector2(self.rect.center)
 

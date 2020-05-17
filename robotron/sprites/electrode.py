@@ -1,26 +1,34 @@
 import pygame
 import random
 
-from .enemy_base import Enemy
+from .sprite_base import Base
 
 
-class Electrode(Enemy):
+class Electrode(Base):
 
     def __init__(self, sprites, engine):
         self.alive = True
 
-        level = engine.get_level() % 10
-        if level > 7:
-            level -= 1
-        level *= 3
+        level = (engine.get_level() + 1) % 10
 
-        # Electrode animations are for level 1-10.  7 doesn't have any
+        # Electrode animations are for level 1-10.  We skip some for some levels.. mostly 7 and 9's
         # The first image is static until the die.
         # Then the electrode 'fades away' by going through cycles of the rest of the sprites.
-        self.animations = []
-        self.animations.append(sprites['electrode' + str(level + 1)])
-        self.animations.append(sprites['electrode' + str(level + 2)])
-        self.animations.append(sprites['electrode' + str(level + 3)])
+
+        animationLevels = [
+            [sprites['electrode19'], sprites['electrode20'], sprites['electrode21']],  # 0
+            [sprites['electrode1'], sprites['electrode2'], sprites['electrode3']],  # 1
+            [sprites['electrode4'], sprites['electrode5'], sprites['electrode6']],  # 2
+            [sprites['electrode7'], sprites['electrode8'], sprites['electrode9']],  # 3
+            [sprites['electrode10'], sprites['electrode11'], sprites['electrode12']],  # 4
+            [sprites['electrode13'], sprites['electrode14'], sprites['electrode15']],  # 5
+            [sprites['electrode16'], sprites['electrode17'], sprites['electrode18']],  # 6
+            [],  # 7
+            [sprites['electrode25'], sprites['electrode26'], sprites['electrode27']],  # 8
+            [],  # 9
+        ]
+
+        self.animations = animationLevels[level]
         super().__init__(sprites, engine)
 
     def update(self):
