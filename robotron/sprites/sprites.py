@@ -7,6 +7,7 @@ from .family import Mommy, Daddy, Mikey
 from .grunt import Grunt
 from .electrode import Electrode
 from .hulk import Hulk
+from .sphereoid import Sphereoid
 
 
 class Sprites:
@@ -35,3 +36,6 @@ class Sprites:
 
     def Hulk(self):
         return Hulk(self.sprites, self.engine)
+
+    def Sphereoid(self):
+        return Sphereoid(self.sprites, self.engine)

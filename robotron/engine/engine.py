@@ -8,6 +8,8 @@ class Engine:
         self.playRect = playRect
         self.waveInfo = waveInfo
         self.defaultStartingLevel = startLevel - 1
+        self.default_reward = -0.1
+        self.reward = self.default_reward
         self.score = 0
         self.level = startLevel
         self.lives = 3
@@ -76,8 +78,12 @@ class Engine:
         for _ in range(hulks):
             self.add_enemy(self.sprites.Hulk())
 
+        # for _ in range(sphereoids):
+        #     self.add_enemy(self.sprites.Sphereoid())
+
     def add_score(self, score):
         self.score += score
+        self.reward = min(1.0, self.reward + 0.3)
 
     def get_score(self):
         return self.score
@@ -91,6 +97,7 @@ class Engine:
         """
         self.familyCollected += 1
         self.score += min(self.familyCollected * 1000, 5000)
+        self.reward = 1.0
         return self.familyCollected
 
     def set_level(self, level):
@@ -158,9 +165,6 @@ class Engine:
         if enemy.__class__.__name__ in self.toKillGroupTypes:
             self.toKillGroup.add(enemy)
 
-    def get_image(self):
-        pygame.surfarray.array3d(pygame.display.get_surface())
-
     # Lifecycle Management
 
     def update(self):
@@ -188,7 +192,13 @@ class Engine:
                 self.level += 1
                 self.initialize_level()
 
-        return (self.score, self.lives, self.lives == 0)
+        reward = self.reward
+        self.reward = self.default_reward
+
+        self.draw()
+        image = self.get_image()
+
+        return (image, reward, self.score, self.lives, self.level, self.lives == 0)
 
     def draw(self):
         self.add_background()
@@ -203,3 +213,9 @@ class Engine:
         self.extraLives = 0
 
         self.initialize_level()
+
+    def get_image(self):
+        return pygame.surfarray.array3d(pygame.display.get_surface())
+
+    def render(self):
+        pass

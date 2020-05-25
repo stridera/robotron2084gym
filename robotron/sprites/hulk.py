@@ -7,7 +7,7 @@ from .sprite_base import Base
 class Hulk(Base):
 
     def __init__(self, sprites, engine):
-        self.type = 'grunt'
+        self.type = 'hulk'
         self.animations = {
             'left': [
                 sprites['hulk1'],
