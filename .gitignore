@@ -9,5 +9,4 @@ __pycache__/
 
 # IDE/ENV
 .vscode/
-venv/
 .venv/

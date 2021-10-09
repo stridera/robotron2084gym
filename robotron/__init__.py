@@ -1,1 +1,1 @@
-from .robotron import Robotron
+from .robotron import RobotronEnv

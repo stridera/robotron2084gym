@@ -1,41 +1,31 @@
 import pygame
 import random
 
-from .sprite_base import Base
+from .base import Base
 
 
 class Hulk(Base):
+    """
+    Hulk Enemy Class
 
-    def __init__(self, sprites, engine):
-        self.type = 'hulk'
-        self.animations = {
-            'left': [
-                sprites['hulk1'],
-                sprites['hulk2'],
-                sprites['hulk1'],
-                sprites['hulk3'],
-            ],
-            'right': [
-                sprites['hulk7'],
-                sprites['hulk8'],
-                sprites['hulk7'],
-                sprites['hulk9'],
-            ],
-            'down': [
-                sprites['hulk4'],
-                sprites['hulk5'],
-                sprites['hulk4'],
-                sprites['hulk6'],
-            ],
-            'up': [
-                sprites['hulk4'],
-                sprites['hulk5'],
-                sprites['hulk4'],
-                sprites['hulk6'],
-            ]
+    Behavior:
+        Hulks are immortal enemies that exist only to kill all in their path.
+        They move slow and randomly turn left or right on their path to mayhem.
+        While they can't die, they can be knocked back slightly by shooting them.
+    """
+
+    def get_animations(self):
+        engine = self.get_engine()
+        return {
+            'left': engine.get_sprites(['hulk1', 'hulk2', 'hulk1', 'hulk3']),
+            'right': engine.get_sprites(['hulk7', 'hulk8', 'hulk7', 'hulk9']),
+            'down': engine.get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6']),
+            'up': engine.get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6'])
         }
 
-        super().__init__(sprites, engine)
+    def reset(self):
+        self.update_animation()
+        self.random_location()
 
         self.moveSpeed = 7
         self.turnPercentage = 20
@@ -46,9 +36,6 @@ class Hulk(Base):
         self.moveDirections = [self.UP, self.RIGHT, self.DOWN, self.LEFT]
         self.direction = random.choice(self.moveDirections)
         self.animationDirection = self.get_direction_string(self.direction)
-        self.update_animation()
-
-        self.random_location()
 
     def turn(self):
         idx = self.moveDirections.index(self.direction)
@@ -83,9 +70,9 @@ class Hulk(Base):
             self.moveDelayRemaining -= 1
 
         for sprite in pygame.sprite.spritecollide(self, self.engine.get_family_group(), False):
-            sprite.die()
+            sprite.die(self)
 
-    def die(self, sprite):
+    def die(self, killer):
         """ Hulks never die, but they can be pushed back """
-        self.rect.center += self.get_vector(sprite.direction, 3)
+        self.rect.center += self.get_vector(killer.direction, 3)
         self.rect.clamp_ip(self.playRect)

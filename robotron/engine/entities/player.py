@@ -1,32 +1,40 @@
+from typing import Type
 import pygame
-from .sprite_base import Base
+from .base import Base
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..engine import Engine
 
 
 class Bullet(Base):
+    """
+    Bullets shot from the player.
+    """
+    WIDTH = 16
+    HEIGHT = 16
 
-    def __init__(self, engine, x, y, direction, playRect):
-        super().__init__(None, engine)
-        self.type = 'playerbullet'
-        self.engine = engine
+    def __init__(self, engine: 'Engine', x, y, direction):
+        self.direction = direction
+        super().__init__(engine)
+        self.rect = pygame.Rect(x, y, self.WIDTH, self.HEIGHT)
+        self.moveSpeed = 15
 
-        width = height = 16
+    def get_animations(self):
         weight = 2
 
-        self.moveSpeed = 15
-        self.playRect = playRect
+        image = pygame.Surface([self.WIDTH, self.HEIGHT]).convert()
 
-        self.direction = direction
-        self.rect = pygame.Rect(x, y, width, height)
-        self.image = pygame.Surface([width, height]).convert()
-
-        if direction in [self.UP, self.DOWN]:
-            pygame.draw.line(self.image, [255, 255, 255], (width // 2, 0), (width // 2, height), weight)
-        elif direction in [self.RIGHT, self.LEFT]:
-            pygame.draw.line(self.image, [255, 255, 255], (0, height // 2), (width, height // 2), weight)
-        elif direction in [self.UP_RIGHT, self.DOWN_LEFT]:
-            pygame.draw.line(self.image, [255, 255, 255], (width, 0), (0, height), weight)
+        if self.direction in [self.UP, self.DOWN]:
+            pygame.draw.line(image, (255, 255, 255), (self.WIDTH // 2, 0), (self.WIDTH // 2, self.HEIGHT), weight)
+        elif self.direction in [self.RIGHT, self.LEFT]:
+            pygame.draw.line(image, (255, 255, 255), (0, self.HEIGHT // 2), (self.WIDTH, self.HEIGHT // 2), weight)
+        elif self.direction in [self.UP_RIGHT, self.DOWN_LEFT]:
+            pygame.draw.line(image, (255, 255, 255), (self.WIDTH, 0), (0, self.HEIGHT), weight)
         else:
-            pygame.draw.line(self.image, [255, 255, 255], (0, 0), (width, height), weight)
+            pygame.draw.line(image, (255, 255, 255), (0, 0), (self.WIDTH, self.HEIGHT), weight)
+
+        return [image]
 
     def update(self):
         vector = self.get_vector(self.direction)
@@ -50,6 +58,9 @@ class Bullet(Base):
 
 
 class Player(pygame.sprite.Sprite):
+    """
+    The savior of humanity.
+    """
     UP = 1
     UP_RIGHT = 2
     RIGHT = 3
@@ -59,10 +70,15 @@ class Player(pygame.sprite.Sprite):
     LEFT = 7
     UP_LEFT = 8
 
-    def __init__(self, sprites, engine):
+    def __init__(self, engine: 'Engine'):
         super().__init__()
 
-        self.type = 'player'
+        self.animations = {
+            'left': engine.get_sprites(['player1', 'player2', 'player1', 'player3']),
+            'right': engine.get_sprites(['player4', 'player5', 'player4', 'player6']),
+            'down': engine.get_sprites(['player7', 'player8', 'player7', 'player9']),
+            'up': engine.get_sprites(['player10', 'player11', 'player10', 'player12']),
+        }
 
         self.playRect = engine.get_play_area()
         self.engine = engine
@@ -72,32 +88,6 @@ class Player(pygame.sprite.Sprite):
         self.animationStep = 0
         self.animationDirection = 'down'
 
-        self.animations = {
-            'left': [
-                sprites['player1'],
-                sprites['player2'],
-                sprites['player1'],
-                sprites['player3'],
-            ],
-            'right': [
-                sprites['player4'],
-                sprites['player5'],
-                sprites['player4'],
-                sprites['player6'],
-            ],
-            'down': [
-                sprites['player7'],
-                sprites['player8'],
-                sprites['player7'],
-                sprites['player9'],
-            ],
-            'up': [
-                sprites['player10'],
-                sprites['player11'],
-                sprites['player10'],
-                sprites['player12'],
-            ]
-        }
         self.reset()
 
     def move(self, move):
@@ -123,8 +113,8 @@ class Player(pygame.sprite.Sprite):
     def shoot(self, shoot):
         if shoot:
             if self.shootDelayRemaining <= 0:
-                bullet = Bullet(self.engine, self.rect.x, self.rect.y, shoot, self.playRect)
-                self.engine.add_bullet(bullet)
+                bullet = Bullet(self.engine, self.rect.x, self.rect.y, shoot)
+                self.engine.add_sprite(bullet)
                 self.shootDelayRemaining = self.shootDelay
 
     def update(self):
@@ -152,7 +142,6 @@ class Player(pygame.sprite.Sprite):
             self.animationStep += 1
             if self.animationStep >= len(self.animations[self.animationDirection]):
                 self.animationStep = 0
-
         else:
             self.animationDirection = dir
             self.animationStep = 0

@@ -8,15 +8,16 @@ r"""
     This file allows humans to play the game.
 """
 
-
+import argparse
+import cv2
 import pygame
-from pygame.locals import KEYDOWN, QUIT, K_ESCAPE, K_q, K_RETURN, K_a, K_s, K_d, K_w, K_j, K_k, K_l, K_i
+from pygame.locals import QUIT, K_ESCAPE, K_q, K_RETURN, K_a, K_s, K_d, K_w, K_j, K_k, K_l, K_i
 
-import robotron
+from robotron import RobotronEnv
 
 
 class Input():
-    """ Gets imput from a controller if attached. """
+    """ Gets imput from the keyboard and/or a controller if attached. """
     UP = 1  # 1 << 0
     DOWN = 2  # 1 << 1
     RIGHT = 4  # 1 << 2
@@ -74,7 +75,7 @@ class Input():
         return response
 
     def read_controller(self):
-        """ Read value from controller """
+        """ Read value from a controller """
 
         if not self.has_joystick:
             raise Exception('Joystick not attached.')
@@ -169,14 +170,23 @@ class Input():
         )
 
 
-def main():
-    level = 1
-    env = robotron.Robotron(level)
+def main(level: int = 1, fps: int = 30, godmode: bool = False):
+    """
+    Run the robotron environment for a human to play.add()
+
+    args:
+        level (int): The level to start on
+        fps (int): The fps to run the engine at (passed to pygame)
+        godmode (bool): Enable godmode (no deaths)
+    """
+    env = RobotronEnv(level, fps, godmode)
     input = Input()
 
     image = env.reset()
     try:
         while True:
+            # cv2.imshow('Robotron', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            # cv2.waitKey(1)
             (left, right, start, back) = input.get()
 
             if back:
@@ -195,4 +205,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Rainbow')
+    parser.add_argument('--level', type=int, default=1, help='Start Level')
+    parser.add_argument('--fps', type=int, default=30, help='FPS')
+    parser.add_argument('--godmode', action='store_true', help='Enable GOD Mode (Can\'t die.)')
+
+    args = parser.parse_args()
+    main(args.level, args.fps, args.godmode)
