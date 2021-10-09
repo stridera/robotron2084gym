@@ -5,7 +5,6 @@ RESOURCE_PATH = "resources/"
 
 WAVES = (
     # Grunts, Electrodes, Hulks, Brains, Sphereoids, Quarks, Mommies, Daddies, Mikeys
-    (1, 0, 0, 0, 0, 0, 3, 1, 1),  # TEST REMOVE ME
     (15, 5, 0, 0, 0, 0, 1, 1, 0),    # 1
     (17, 15, 5, 0, 1, 0, 1, 1, 1),
     (22, 25, 6, 0, 3, 0, 2, 2, 2),
