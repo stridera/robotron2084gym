@@ -1,5 +1,7 @@
-import pygame
+""" Generator Enemy Subclass Module """
 import random
+
+import pygame
 
 from .base import Base
 from .floater import Floater
@@ -24,13 +26,12 @@ class Generator(Base):
 
     def update(self):
         if self.alive:
-            self.spawnDelay -= 1
-            if self.spawnDelay <= 0:
+            self.spawn_delay -= 1
+            if self.spawn_delay <= 0:
                 self.spawn()
             self.update_animation()
             self.move()
         else:
-            self.zero()
             if not self.spawns:
                 self.kill()
 
@@ -43,18 +44,18 @@ class Generator(Base):
     def spawn(self):
         self.cycle = len(self.animations)
         self.spawning = True
-        self.spawnDelay = random.randrange(self.SPAWN_DELAY // 8, self.SPAWN_DELAY // 4)
-        self.spawnCount -= 1
+        self.spawn_delay = random.randrange(self.SPAWN_DELAY // 8, self.SPAWN_DELAY // 4)
+        self.spawn_count -= 1
 
         spawn = self.get_spawn()
         self.engine.add_enemy(spawn)
         self.spawns.add(spawn)
-        if self.spawnCount == 0:
+        if self.spawn_count == 0:
             self.vanish()
 
     def die(self, killer):
-        deathSprite = Floater(self.engine, xy=self.rect.center, sprite_name='1000')
-        self.engine.add_sprite(deathSprite)
+        del killer
+        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='1000'))
         self.vanish()
 
     def vanish(self):
@@ -68,8 +69,8 @@ class Generator(Base):
 
     def reset(self):
         self.cycle = self.PRE_SPAWN_CYCLE_LIMIT
-        self.spawnDelay = random.randrange(self.SPAWN_DELAY / 8, self.SPAWN_DELAY)
-        self.spawnCount = random.randrange(1, 6)
+        self.spawn_delay = random.randrange(self.SPAWN_DELAY / 8, self.SPAWN_DELAY)
+        self.spawn_count = random.randrange(1, 6)
         self.spawning = False
         self.alive = True
         self.moveCurvature = pygame.Vector2(0)

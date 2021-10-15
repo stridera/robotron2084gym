@@ -13,29 +13,25 @@ class Grunt(Base):
         They move fairly slow but speed up as the level progresses.
 
     """
-    SCORE = 100
 
     def get_animations(self):
-        engine = self.get_engine()
-        return engine.get_sprites(['grunt1', 'grunt2', 'grunt1', 'grunt3'])
+        """Returns the images used to animate the sprite."""
+
+        return self.engine.get_sprites(['grunt1', 'grunt2', 'grunt1', 'grunt3'])
 
     def reset(self):
-        self.moveSpeed = 7
-        self.moveDelayMax = 25
-        self.moveDelayMin = 5
-        self.moveDelayRemaining = random.randrange(self.moveDelayMin, self.moveDelayMax)
-
-        self.update_animation()
-        self.random_location()
+        self.speed = 7
+        self.move_delay = (5, 25)
+        self.move_countdown = random.randrange(*self.move_delay)
 
     def move(self):
         """ Grunts move toward the player """
         self.update_animation()
-        self.move_toward_player(self.moveSpeed)
+        self.move_toward_player(self.speed)
 
     def update(self):
-        if self.moveDelayRemaining <= 0:
+        if self.move_countdown <= 0:
             self.move()
-            self.moveDelayRemaining = random.randrange(self.moveDelayMin, self.moveDelayMax)
+            self.move_countdown = random.randrange(*self.move_delay)
         else:
-            self.moveDelayRemaining -= 1
+            self.move_countdown -= 1

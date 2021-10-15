@@ -18,7 +18,7 @@ class EnforcerBullet(Base):
 
     def get_trajectory(self):
         if not self.vector:
-            engine = self.get_engine()
+            engine = self.engine
             distanceToPlayer = self.get_distance_to_player()
             max_distance = engine.get_play_area_distance()
             speed = ((distanceToPlayer * self.MAX_SPEED) / max_distance) + 1
@@ -34,32 +34,30 @@ class EnforcerBullet(Base):
 
     def get_animations(self):
         """
-        Update the current image.  Right now I draw it every cycle.  This is because in the
-        game they change colors and I was going to add that, but for now, we just have black
-        and white.
+        Generate the bullet images.  We have 2 images, a + and a x.  It's easier just to make two images than deal
+        with trying to rotate it every cycle.
         """
         weight = 2
         width = height = 16
         image1 = pygame.Surface([width, height]).convert()
         pygame.draw.line(image1, [255, 255, 255], (width, 0), (0, height), weight)
         pygame.draw.line(image1, [255, 255, 255], (0, 0), (width, height), weight)
+        image1.set_colorkey((0, 0, 0))
         image2 = pygame.Surface([width, height]).convert()
         pygame.draw.line(image2, [255, 255, 255], (width // 2, 0), (width // 2, height), weight)
         pygame.draw.line(image2, [255, 255, 255], (0, height // 2), (width, height // 2), weight)
+        image2.set_colorkey((0, 0, 0))
         return [image1, image2]
 
     def update(self):
         if self.timeToLive % 3 == 0:
             self.update_animation()
         self.rect.center += self.get_trajectory()
-        self.rect.clamp_ip(self.playRect)
+        self.rect.clamp_ip(self.play_rect)
 
         self.timeToLive -= 1
         if self.timeToLive <= 0:
             self.kill()
-
-    def zero(self):
-        self.kill()
 
     def reset(self):
         self.kill()
@@ -79,18 +77,19 @@ class Enforcer(Base):
     MIN_SPEED = 0.2
 
     def get_animations(self):
-        return self.get_engine().get_sprites(
+        """Returns the images used to animate the sprite."""
+        return self.engine.get_sprites(
             ['enforcer2', 'enforcer3', 'enforcer4', 'enforcer5', 'enforcer6', 'enforcer1'])
 
     def setup(self):
-        self.animationStep = 0
+        self.animation_step = 0
         self.animationDelay = 0
         self.update_animation()
 
         self.rect = self.image.get_rect()
         self.active = 0
 
-        self.max_distance = self.get_engine().get_play_area_distance()
+        self.max_distance = self.engine.get_play_area_distance()
         self.offset_update = 0
         self.random_offset = 0
         self.shootDelay = random.randint(10, 30)
@@ -105,10 +104,10 @@ class Enforcer(Base):
         Enforcers cycle through all animations until they hit the end one.  (Basically growing up.)  Once
         they're fully grown, the sprite doesn't change.
         """
-        if self.animationStep < len(self.animations):
+        if self.animation_step < len(self.animations):
             if self.animationDelay == 0:
-                self.image = self.animations[self.animationStep]
-                self.animationStep += 1
+                self.image = self.animations[self.animation_step]
+                self.animation_step += 1
                 self.animationDelay = 3
             else:
                 self.animationDelay -= 1
@@ -132,7 +131,7 @@ class Enforcer(Base):
             distanceToPlayer = self.get_distance_to_player()
             speed = ((distanceToPlayer * self.MAX_SPEED) / self.max_distance) + 1
             self.move_toward_player(speed + self.random_offset)
-            self.rect.clamp_ip(self.playRect)
+            self.rect.clamp_ip(self.play_rect)
 
     def shoot(self):
         """
@@ -144,7 +143,7 @@ class Enforcer(Base):
         self.shootDelay -= 1
         if self.shootDelay <= 0:
             self.shootDelay = random.randint(10, 30)
-            self.engine.add_enemy(EnforcerBullet(self.engine, xy=self.rect.center))
+            self.engine.add_enemy(EnforcerBullet(self.engine, center=self.rect.center))
 
     def reset(self):
         self.kill()

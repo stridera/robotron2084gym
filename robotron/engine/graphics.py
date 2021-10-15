@@ -1,15 +1,19 @@
+""" Handle loading graphics and returning individual sprites by name."""
+
 from os import path
+from typing import Dict
+
 import pygame
 
 
-def load_graphics():
+def load_graphics() -> Dict[pygame.Surface]:
     """
     Loads the spritesheet and breaks it down into individual sprites.
 
     Returns:
         dict: A dictionary of sprite names to images.
     """
-    def _get_image(x, y, width, height):
+    def _get_image(x: int, y: int, width: int, height: int) -> pygame.Surface:
         image = pygame.Surface([width, height]).convert()
         image.blit(spritesheet, (0, 0), (x, y, width, height))
         return image
@@ -24,29 +28,29 @@ def load_graphics():
     try:
         spritesheet = pygame.image.load(spritesheet_path).convert()
         spritesheet.set_colorkey((0, 0, 0))
-    except pygame.error as e:
-        print(f"Unable to load spritesheet image.")
-        raise SystemExit(e)
+    except pygame.error as pygame_exception:
+        print("Unable to load spritesheet image.")
+        raise SystemExit from pygame_exception
 
     sprites = {}
     rowheight = 0
     i = x = y = 0
     ssw, _ = spritesheet.get_rect().size
 
-    spriteDefFile = open(def_path, 'r')
-    for line in spriteDefFile:
-        i += 1
-        (name, _, _, w, h, _) = line.split()
-        w = int(w) * 4
-        h = int(h) * 2
-        if x + w > ssw:
-            x = 0
-            y += rowheight + 10
-            rowheight = 0
+    with open(def_path, 'r', encoding="utf-8") as sprite_definition_file:
+        for line in sprite_definition_file:
+            i += 1
+            (name, _, _, w, h, _) = line.split()
+            w = int(w) * 4
+            h = int(h) * 2
+            if x + w > ssw:
+                x = 0
+                y += rowheight + 10
+                rowheight = 0
 
-        sprites[name] = _get_image(x, y, w, h)
-        x += w + 10
-        if h > rowheight:
-            rowheight = h
+            sprites[name] = _get_image(x, y, w, h)
+            x += w + 10
+            if h > rowheight:
+                rowheight = h
 
     return sprites

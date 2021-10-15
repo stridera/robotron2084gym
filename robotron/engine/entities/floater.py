@@ -10,12 +10,14 @@ class Floater(Base):
         self.delay = self.args['delay'] if 'delay' in self.args.keys() else 15
 
     def get_animations(self):
+        """Returns the images used to animate the sprite."""
+
         keys = self.args.keys()
 
         if 'sprite' in keys:
             sprite = self.args['sprite']
         elif 'sprite_name' in keys:
-            sprite = self.get_engine().get_sprite(str(self.args['sprite_name']))
+            sprite = self.engine.get_sprite(str(self.args['sprite_name']))
         else:
             raise ValueError("Invalid sprite passed.")
 

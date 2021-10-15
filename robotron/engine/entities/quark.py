@@ -1,7 +1,8 @@
-import pygame
+""" Quark Enemy Module"""
 import random
 
-from .base import Base
+import pygame
+
 from .generator import Generator
 from .tank import Tank
 
@@ -19,21 +20,26 @@ _
     MAX_MOVE_DELAY = 30
 
     def get_animations(self):
-        return self.get_engine().get_sprites([
+        """Returns the images used to animate the sprite."""
+
+        return self.engine.get_sprites([
             'quark1', 'quark2', 'quark3', 'quark4', 'quark5', 'quark6', 'quark7', 'quark8', 'quark9'
         ])
 
     def setup(self):
         super().setup()
         self.vector = pygame.Vector2(0)
-        self.turnDelay = 0
+        self.turn_delay = 0
 
     def move(self):
-        if self.turnDelay == 0:
-            self.turnDelay += random.randint(5, self.MAX_MOVE_DELAY)
+        if self.turn_delay == 0:
+            self.turn_delay += random.randint(5, self.MAX_MOVE_DELAY)
             self.vector = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))*5
+        else:
+            self.turn_delay -= 1
+
         self.rect.center += self.vector
-        self.rect.clamp_ip(self.playRect)
+        self.rect.clamp_ip(self.play_rect)
 
     def get_spawn(self):
-        return Tank(self.engine, self.rect.center)
+        return Tank(self.engine, center=self.rect.center)

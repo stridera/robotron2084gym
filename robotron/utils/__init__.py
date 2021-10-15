@@ -2,10 +2,11 @@ from typing import Tuple
 
 import numpy as np
 
-def crop(self, image: np.ndarray, left: int, top: int, right: int, bottom: int) -> np.ndarray:
+
+def crop(image: np.ndarray, dims: Tuple[int, int, int, int]) -> np.ndarray:
     """
     Crop an image
-    
+
     Args:
         image (np.ndarray): The image we want to crop
         coords (Tuple[int, int, int, int]): The left, top, right, and 
@@ -14,4 +15,5 @@ def crop(self, image: np.ndarray, left: int, top: int, right: int, bottom: int) 
     Returns:
         np.ndarray: The cropped image
     """
+    left, top, right, bottom = dims
     return image[left:right, top:bottom]

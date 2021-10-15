@@ -1,5 +1,7 @@
-import pygame
+""" Family Sprite Module """
 import random
+
+import pygame
 
 from .base import Base
 from .floater import Floater
@@ -15,77 +17,69 @@ class Family(Base):
     """
 
     def setup(self):
-        self.isAlive = True
-        self.isProg = False
-        self.moveSpeed = 4
-        self.moveDelay = 5
-        self.deathDelay = 15
+        """ Setup sprite """
+        self.speed = 4
+        self.move_delay = 5
 
-        self.progScore = 100
-        self.programmingTime = 60
-        self.offset = 0
-        self.progSpeed = 3
-        self.moveTrail = []
         self.reset()
 
-    def get_animations(self):
-        engine = self.get_engine()
-        prefix = self.PREFIX
-        return {
-            'left': engine.get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
-            'right': engine.get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
-            'down': engine.get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
-            'up': engine.get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
-        }
-
-    def update_animation(self):
-        animations = self.animations[self.animationDirection or 'down']
-        self.animationStep += 1
-        if self.animationStep >= (self.cycle or len(animations)):
-            self.animationStep = 0
-
-        self.image = animations[self.animationStep]
-
     def reset(self):
-        self.moveDirection = random.randrange(1, 8)
+        """ Reset the sprite. """
+        self.move_direction = random.randrange(1, 8)
         self.update_animation()
         self.random_location()
 
-    def move(self):
-        """
-        Family Members just choose a direction and go.  They change randomly or when they hit a wall.
+    def get_animations(self):
+        """Returns the images used to animate the sprite."""
+        prefix = self.PREFIX
+        return {
+            'left': self.engine.get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
+            'right': self.engine.get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
+            'down': self.engine.get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
+            'up': self.engine.get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
+        }
 
-        """
-        if self.engine.frame % self.moveDelay == 0:
-            validDirs = list(range(1, 8))
+    def update_animation(self):
+        """ Update the image to the next in the animation loop. """
+        animations = self.animations[self.animation_direction or 'down']
+        self.animation_step += 1
+        if self.animation_step >= (self.cycle or len(animations)):
+            self.animation_step = 0
+
+        self.image = animations[self.animation_step]
+
+    def move(self):
+        """ Family Members just choose a direction and go.  They change randomly or when they hit a wall. """
+        if self.engine.frame % self.move_delay == 0:
+            valid_directions = list(range(1, 8))
 
             # If we move into a wall or quark, we need to choose a new direction
-            direction = self.moveDirection
+            direction = self.move_direction
             while not self.valid_move(direction):
-                if direction in validDirs:
-                    validDirs.remove(direction)
-                if len(validDirs) == 0:
+                if direction in valid_directions:
+                    valid_directions.remove(direction)
+                if len(valid_directions) == 0:
                     direction = 0
                     break
-                else:
-                    direction = random.choice(validDirs)
 
-            self.moveVector = self.get_vector(direction)
-            self.rect.center += self.moveVector
-            self.moveDirection = direction
+                direction = random.choice(valid_directions)
+
+            self.vector = self.get_vector(direction)
+            self.rect.center += self.vector
+            self.move_direction = direction
 
     def get_score(self):
-        """ Happens in the engine """
-        pass
+        """ Happens in the engine. """
 
     def collected(self):
-        level = self.engine.family_collected()
+        """ Triggered when """
+        level = self.engine.set_family_collected()
         level = min(level, 5)
-        self.engine.add_sprite(Floater(self.engine, xy=self.rect.center, sprite_name=str(level*1000)))
+        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name=str(level*1000)))
         self.kill()
 
     def die(self, killer):
-        self.engine.add_sprite(Floater(self.engine, xy=self.rect.center, sprite_name='familydeath'))
+        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='familydeath'))
         self.kill()
 
     def update(self):
@@ -93,29 +87,24 @@ class Family(Base):
         Family members just keep walking continuously
         """
         self.update_animation()
+        if self.engine.frame % self.move_delay == 0:
+            self.move()
 
-        if self.isAlive:
-            if self.engine.frame % self.moveDelay == 0:
-                self.move()
-
-            for sprite in pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False):
-                if sprite.__class__.__name__ == 'Hulk':
-                    self.die(sprite)
-        else:
-            self.deathDelay -= 1
-            if self.deathDelay <= 0:
-                self.kill()
-
-        # self.program(self.rect.center)
+        for sprite in pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False):
+            if sprite.__class__.__name__ == 'Hulk':
+                self.die(sprite)
 
 
 class Mommy(Family):
+    """ Mommy """
     PREFIX = 'mommy'
 
 
 class Daddy(Family):
+    """ Daddy """
     PREFIX = 'daddy'
 
 
 class Mikey(Family):
+    """ Brain Food Mikey """
     PREFIX = 'mikey'

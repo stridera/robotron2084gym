@@ -6,7 +6,7 @@ Provides a way to play the Robotron 2084 game one frame at a time.
 
 Goal:
     This is an attempt to create Robotron 2084 for reinforcement learning models.
-    It attempts to follow the OpenAI Gym (https://gym.openai.com/) protocol for 
+    It attempts to follow the OpenAI Gym (https://gym.openai.com/) protocol for
     easy implementation.  The end goal is to create a model that will play
     the xbox 360 version on the actual hardware.
 
@@ -14,16 +14,14 @@ Goal:
 
 Example:
     >>> from robotron import Robotron
-    >>> 
+    >>>
 
 """
+from typing import Tuple
 
-import os
 import pygame
 import numpy as np
 import cv2
-
-from typing import Tuple
 
 from . import config
 from .engine import Engine
@@ -46,8 +44,8 @@ class RobotronEnv:
             headless (bool): Skip creating the screen.
         """
         (top, left, bottom, right) = config.PLAY_AREA
-        self.playArea = pygame.Rect(left, top, right - left, bottom - top)
-        self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, level, fps, godmode)
+        self.play_area = pygame.Rect(left, top, right - left, bottom - top)
+        self.engine = Engine(config.SCREEN_SIZE, self.play_area, config.WAVES, level, fps, godmode, headless)
         self._level = level
         self._lives = 3
         self._dead = False
@@ -63,7 +61,7 @@ class RobotronEnv:
         return self.engine.reset()
 
     def step(self,  action: int) -> Tuple[np.ndarray, int, bool, dict]:
-        """
+        r"""
         Play one frame of the game.  We return the obs, reward, done, and
         any additional info.  Follows the openai gym observations structure.
         https://gym.openai.com/docs/#observations
@@ -112,18 +110,17 @@ class RobotronEnv:
         Convert the image into a 84 by 84 pixel image in a format for deep learning agents to easily consume.
 
         returns:
-            np.ndarray: The 
+            np.ndarray: The game image for the current step
         """
         image = self.engine.get_image()
-        image = self.crop(image, *config.PLAY_AREA)
+        image = crop(image, config.PLAY_AREA)
         image = np.transpose(image, (1, 0, 2))
         image = cv2.resize(image, (84, 84), interpolation=cv2.INTER_LINEAR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) / 255.
         return image
 
     def render(self):
-        """ Tell the engine to render an image to the screen. """
-        self.engine.render()
+        """ TODO:  Render the game on the screen while playing. """
 
     @property
     def level(self):
