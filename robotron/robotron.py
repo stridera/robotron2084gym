@@ -18,6 +18,7 @@ Example:
 
 """
 
+import gym
 import os
 import pygame
 import numpy as np
@@ -30,12 +31,13 @@ from .engine import Engine
 from .utils import crop
 
 
-class RobotronEnv:
+class RobotronEnv(gym.Env):
     """
     The Robotron 2084 Environment.
     """
+    OUTPUT_SIZE = (168, 168)
 
-    def __init__(self, level: int = 1, fps: int = 30, godmode: bool = False, headless: bool = True):
+    def __init__(self, env_config, level: int = 1, fps: int = 30, godmode: bool = False, headless: bool = True):
         """
         Setup the environment
 
@@ -45,6 +47,9 @@ class RobotronEnv:
             godmode (bool): Can the player die?  Default: False
             headless (bool): Skip creating the screen.
         """
+        self.action_space = gym.spaces.Discrete(9*9)
+        self.observation_space = gym.spaces.Box(0, 255, self.OUTPUT_SIZE)
+
         (top, left, bottom, right) = config.PLAY_AREA
         self.playArea = pygame.Rect(left, top, right - left, bottom - top)
         self.engine = Engine(config.SCREEN_SIZE, self.playArea, config.WAVES, level, fps, godmode)
@@ -60,7 +65,7 @@ class RobotronEnv:
             np.ndarray: The initial obs
         """
         print("Resetting")
-        return self.engine.reset()
+        return self.get_state(self.engine.reset())
 
     def step(self,  action: int) -> Tuple[np.ndarray, int, bool, dict]:
         """
@@ -101,23 +106,22 @@ class RobotronEnv:
         self._level = level
         self._dead = dead
 
-        return image, reward, dead or level > 1, {
+        return self.get_state(image), reward, dead or level > 1, {
             'score': score,
             'level': level,
             'lives': lives
         }
 
-    def get_state(self):
+    def get_state(self, image):
         """
         Convert the image into a 84 by 84 pixel image in a format for deep learning agents to easily consume.
 
         returns:
             np.ndarray: The 
         """
-        image = self.engine.get_image()
-        image = self.crop(image, *config.PLAY_AREA)
+        image = crop(image, config.PLAY_AREA)
         image = np.transpose(image, (1, 0, 2))
-        image = cv2.resize(image, (84, 84), interpolation=cv2.INTER_LINEAR)
+        image = cv2.resize(image, self.OUTPUT_SIZE, interpolation=cv2.INTER_LINEAR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) / 255.
         return image
 

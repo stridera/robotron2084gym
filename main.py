@@ -170,7 +170,7 @@ class Input():
         )
 
 
-def main(level: int = 1, fps: int = 30, godmode: bool = False):
+def main(level: int = 1, fps: int = 30, godmode: bool = False, headless: bool = False):
     """
     Run the robotron environment for a human to play.add()
 
@@ -179,10 +179,11 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
         fps (int): The fps to run the engine at (passed to pygame)
         godmode (bool): Enable godmode (no deaths)
     """
-    env = RobotronEnv(level, fps, godmode)
+    env = RobotronEnv(None, level, fps, godmode, headless=headless)
     input = Input()
 
     image = env.reset()
+    print(image.shape)
     try:
         while True:
             # cv2.imshow('Robotron', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
@@ -209,6 +210,7 @@ if __name__ == "__main__":
     parser.add_argument('--level', type=int, default=1, help='Start Level')
     parser.add_argument('--fps', type=int, default=30, help='FPS')
     parser.add_argument('--godmode', action='store_true', help='Enable GOD Mode (Can\'t die.)')
+    parser.add_argument('--headless', action='store_true', help='Enable headless Mode (No Display)')
 
     args = parser.parse_args()
     main(args.level, args.fps, args.godmode)

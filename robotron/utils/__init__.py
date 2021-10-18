@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-def crop(self, image: np.ndarray, left: int, top: int, right: int, bottom: int) -> np.ndarray:
+def crop(image: np.ndarray, rect) -> np.ndarray:
     """
     Crop an image
     
@@ -14,4 +14,5 @@ def crop(self, image: np.ndarray, left: int, top: int, right: int, bottom: int) 
     Returns:
         np.ndarray: The cropped image
     """
+    left, top, right, bottom = rect
     return image[left:right, top:bottom]
