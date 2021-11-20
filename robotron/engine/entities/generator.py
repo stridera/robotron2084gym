@@ -21,10 +21,22 @@ class Generator(Base):
     SPEED = 5
     SPAWN_DELAY = 64
 
+    def reset(self):
+        self.cycle = self.PRE_SPAWN_CYCLE_LIMIT
+        self.spawn_delay = random.randrange(self.SPAWN_DELAY / 8, self.SPAWN_DELAY)
+        self.spawn_count = random.randrange(1, 6)
+        self.spawning = False
+        self.alive = True
+        self.move_curvature = pygame.Vector2(0)
+        self.move_deltas = pygame.Vector2(0)
+        self.spawns = pygame.sprite.Group()
+
     def move(self):
+        """ Moves the sprite.  Must be overridden. """
         raise NotImplementedError()
 
     def update(self):
+        """ Update the sprite. """
         if self.alive:
             self.spawn_delay -= 1
             if self.spawn_delay <= 0:
@@ -42,6 +54,7 @@ class Generator(Base):
         raise NotImplementedError()
 
     def spawn(self):
+        """ Spawn the babies. """
         self.cycle = len(self.animations)
         self.spawning = True
         self.spawn_delay = random.randrange(self.SPAWN_DELAY // 8, self.SPAWN_DELAY // 4)
@@ -66,13 +79,3 @@ class Generator(Base):
         """
         self.rect.center = -100, -100
         self.alive = False
-
-    def reset(self):
-        self.cycle = self.PRE_SPAWN_CYCLE_LIMIT
-        self.spawn_delay = random.randrange(self.SPAWN_DELAY / 8, self.SPAWN_DELAY)
-        self.spawn_count = random.randrange(1, 6)
-        self.spawning = False
-        self.alive = True
-        self.moveCurvature = pygame.Vector2(0)
-        self.moveDeltas = pygame.Vector2(0)
-        self.spawns = pygame.sprite.Group()

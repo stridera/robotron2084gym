@@ -300,7 +300,6 @@ class Engine:
                 if self.lives > 0:
                     self.lives -= 1
                     for sprite in self.all_group:
-                        sprite.zero()
                         sprite.reset()
                 else:
                     self.done = True

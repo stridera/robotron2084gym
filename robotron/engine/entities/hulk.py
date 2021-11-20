@@ -3,7 +3,7 @@ import random
 
 import pygame
 
-from .base import Base, Direction
+from .base import Base
 
 
 class Hulk(Base):
@@ -40,7 +40,7 @@ class Hulk(Base):
         self.direction = random.choice(self.move_directions)
         self.animation_direction = self.get_direction_string(self.direction)
 
-    def get_direction_string(self, direction: Direction):
+    def get_direction_string(self, direction: int):
         """
         Translate the integer direction to the text based equiv.
 
@@ -50,13 +50,13 @@ class Hulk(Base):
         Returns:
             str: The direction string
         """
-        if direction == self.Direction.UP:
+        if direction == self.UP:
             return 'up'
-        if direction == self.Direction.DOWN:
+        if direction == self.DOWN:
             return 'down'
-        if direction in [self.Direction.LEFT, self.Direction.UP_LEFT, self.Direction.DOWN_LEFT]:
+        if direction in [self.LEFT, self.UP_LEFT, self.DOWN_LEFT]:
             return 'left'
-        if direction in [self.Direction.RIGHT, self.Direction.UP_RIGHT, self.Direction.DOWN_RIGHT]:
+        if direction in [self.RIGHT, self.UP_RIGHT, self.DOWN_RIGHT]:
             return 'right'
 
     def turn(self):

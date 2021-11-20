@@ -1,3 +1,4 @@
+""" Enforcer Enemy Module """
 import random
 import pygame
 
@@ -13,24 +14,26 @@ class EnforcerBullet(Base):
     DEFAULT_TIME_TO_LIVE = 50
 
     def setup(self):
-        self.timeToLive = self.DEFAULT_TIME_TO_LIVE
+        self.time_to_live = self.DEFAULT_TIME_TO_LIVE
         self.vector = None
 
     def get_trajectory(self):
+        """Calculate the trajectory of the bullet."""
         if not self.vector:
             engine = self.engine
-            distanceToPlayer = self.get_distance_to_player()
+            distance_to_player = self.get_distance_to_player()
             max_distance = engine.get_play_area_distance()
-            speed = ((distanceToPlayer * self.MAX_SPEED) / max_distance) + 1
+            speed = ((distance_to_player * self.MAX_SPEED) / max_distance) + 1
             player_rect = engine.player.rect
-            tx = random.randint(player_rect.left - 10, player_rect.right + 10)
-            ty = random.randint(player_rect.top - 10, player_rect.bottom + 10)
-            self.vector = (pygame.Vector2(tx, ty) - pygame.Vector2(self.rect.center)).normalize() * speed
-            self.randomVector = pygame.Vector2(random.random(), random.random())
+            x_trajectory = random.randint(player_rect.left - 10, player_rect.right + 10)
+            y_trajectory = random.randint(player_rect.top - 10, player_rect.bottom + 10)
+            self.vector = (pygame.Vector2(x_trajectory, y_trajectory) -
+                           pygame.Vector2(self.rect.center)).normalize() * speed
+            self.random_vector = pygame.Vector2(random.random(), random.random())
         else:
-            self.randomVector *= 1.01
+            self.random_vector *= 1.01
 
-        return self.vector + self.randomVector
+        return self.vector + self.random_vector
 
     def get_animations(self):
         """
@@ -50,13 +53,13 @@ class EnforcerBullet(Base):
         return [image1, image2]
 
     def update(self):
-        if self.timeToLive % 3 == 0:
+        if self.time_to_live % 3 == 0:
             self.update_animation()
         self.rect.center += self.get_trajectory()
         self.rect.clamp_ip(self.play_rect)
 
-        self.timeToLive -= 1
-        if self.timeToLive <= 0:
+        self.time_to_live -= 1
+        if self.time_to_live <= 0:
             self.kill()
 
     def reset(self):
@@ -83,7 +86,7 @@ class Enforcer(Base):
 
     def setup(self):
         self.animation_step = 0
-        self.animationDelay = 0
+        self.animation_delay = 0
         self.update_animation()
 
         self.rect = self.image.get_rect()
@@ -92,7 +95,7 @@ class Enforcer(Base):
         self.max_distance = self.engine.get_play_area_distance()
         self.offset_update = 0
         self.random_offset = 0
-        self.shootDelay = random.randint(10, 30)
+        self.shoot_delay = random.randint(10, 30)
 
     def update(self):
         self.update_animation()
@@ -105,12 +108,12 @@ class Enforcer(Base):
         they're fully grown, the sprite doesn't change.
         """
         if self.animation_step < len(self.animations):
-            if self.animationDelay == 0:
+            if self.animation_delay == 0:
                 self.image = self.animations[self.animation_step]
                 self.animation_step += 1
-                self.animationDelay = 3
+                self.animation_delay = 3
             else:
-                self.animationDelay -= 1
+                self.animation_delay -= 1
         else:
             self.active = True
 
@@ -128,8 +131,8 @@ class Enforcer(Base):
 
             self.offset_update -= 1
 
-            distanceToPlayer = self.get_distance_to_player()
-            speed = ((distanceToPlayer * self.MAX_SPEED) / self.max_distance) + 1
+            distance_to_player = self.get_distance_to_player()
+            speed = ((distance_to_player * self.MAX_SPEED) / self.max_distance) + 1
             self.move_toward_player(speed + self.random_offset)
             self.rect.clamp_ip(self.play_rect)
 
@@ -140,9 +143,9 @@ class Enforcer(Base):
         distance from the player.  The farther away means the faster they go.  There is also a random velocity
         added to each bullet each frame which can make them appear to curve.
         """
-        self.shootDelay -= 1
-        if self.shootDelay <= 0:
-            self.shootDelay = random.randint(10, 30)
+        self.shoot_delay -= 1
+        if self.shoot_delay <= 0:
+            self.shoot_delay = random.randint(10, 30)
             self.engine.add_enemy(EnforcerBullet(self.engine, center=self.rect.center))
 
     def reset(self):

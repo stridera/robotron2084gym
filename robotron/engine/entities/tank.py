@@ -29,30 +29,32 @@ class TankShell(Base):
         self.vector = None
 
     def get_trajectory(self):
+        """ Calculate the new trajectory. """
         if not self.vector:
-            distanceToPlayer = self.get_distance_to_player()
+            distance_to_player = self.get_distance_to_player()
             max_distance = self.engine.get_play_area_distance()
-            self.speed = ((distanceToPlayer * self.MAX_SPEED) / max_distance) + self.MIN_SPEED
+            self.speed = ((distance_to_player * self.MAX_SPEED) / max_distance) + self.MIN_SPEED
             x, y = self.rect.center
-            px, py = self.engine.player.rect.center
+            player_x, player_y = self.engine.player.rect.center
             attack = randrange(10)
             if attack < 2:
                 # reflect off top wall
-                self.vector = self.get_vector_to_point((x + (px - x) // 2, self.play_rect.top))
+                self.vector = self.get_vector_to_point((x + (player_x - x) // 2, self.play_rect.top))
             elif attack < 4:
                 # reflect off bottom wall
-                self.vector = self.get_vector_to_point((x + (px - x) // 2, self.play_rect.bottom))
+                self.vector = self.get_vector_to_point((x + (player_x - x) // 2, self.play_rect.bottom))
             elif attack < 6:
                 # reflect off right
-                self.vector = self.get_vector_to_point((self.play_rect.right, y + (py - y) // 2))
+                self.vector = self.get_vector_to_point((self.play_rect.right, y + (player_y - y) // 2))
             elif attack < 8:
                 # reflect off left
-                self.vector = self.get_vector_to_point((self.play_rect.left, y + (py - y) // 2))
+                self.vector = self.get_vector_to_point((self.play_rect.left, y + (player_y - y) // 2))
             else:
                 self.vector = self.get_vector_to_player()
         return self.vector * self.speed
 
     def move(self):
+        """ Move toward the player. """
         self.rect.center += self.get_trajectory()
 
         if self.rect.top <= self.play_rect.top:

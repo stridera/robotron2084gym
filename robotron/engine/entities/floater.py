@@ -1,3 +1,4 @@
+""" Module for Floating Sprites """
 from .base import Base
 
 
@@ -7,7 +8,7 @@ class Floater(Base):
     """
 
     def setup(self):
-        self.delay = self.args['delay'] if 'delay' in self.args.keys() else 15
+        self.delay = self.args['delay'] if 'delay' in self.args else 15
 
     def get_animations(self):
         """Returns the images used to animate the sprite."""

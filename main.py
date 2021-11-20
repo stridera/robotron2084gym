@@ -9,7 +9,6 @@ r"""
 """
 
 import argparse
-import cv2
 import pygame
 from pygame.locals import QUIT, K_ESCAPE, K_q, K_RETURN, K_a, K_s, K_d, K_w, K_j, K_k, K_l, K_i
 
@@ -124,6 +123,7 @@ class Input():
         return self.has_joystick
 
     def get(self):
+        """ Get input from the keyboard or controller """
         if self.attached():
             return self.read_controller()
 
@@ -179,15 +179,13 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
         fps (int): The fps to run the engine at (passed to pygame)
         godmode (bool): Enable godmode (no deaths)
     """
-    env = RobotronEnv(level, fps, godmode)
-    input = Input()
+    env = RobotronEnv(level, fps, godmode, headless=False)
+    user_input = Input()
 
-    image = env.reset()
+    env.reset()
     try:
         while True:
-            # cv2.imshow('Robotron', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-            # cv2.waitKey(1)
-            (left, right, start, back) = input.get()
+            (left, right, start, back) = user_input.get()
 
             if back:
                 break
@@ -196,9 +194,9 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
                 env.reset()
 
             action = left * 9 + right
-            image, reward, done, info = env.step(action)
+            env.step(action)
 
-    except (KeyboardInterrupt):
+    except KeyboardInterrupt:
         print("Interrupt detected.  Exiting...")
 
     print("Goodbye!")

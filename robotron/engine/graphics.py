@@ -6,7 +6,7 @@ from typing import Dict
 import pygame
 
 
-def load_graphics() -> Dict[pygame.Surface]:
+def load_graphics() -> Dict[str, pygame.Surface]:
     """
     Loads the spritesheet and breaks it down into individual sprites.
 

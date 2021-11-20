@@ -16,6 +16,10 @@ class Sphereoid(Generator):
         - Their purpose is spawn enforcers.
     """
 
+    def reset(self):
+        super().reset()
+        self.update_curvature_and_countdowns()
+
     def get_animations(self):
         """Returns the images used to animate the sprite."""
 
@@ -36,15 +40,14 @@ class Sphereoid(Generator):
 
     def move(self):
         """ Sphereoids """
+        if not self.alive:
+            return
+
         self.move_delay -= 1
         if self.move_delay == 0:
             self.update_curvature_and_countdowns()
 
-        self.moveDeltas.x = min(self.SPEED, max(-self.SPEED, self.moveDeltas.x + self.SPEED * self.move_curvature.x))
-        self.moveDeltas.y = min(self.SPEED, max(-self.SPEED, self.moveDeltas.y + self.SPEED * self.move_curvature.y))
-        self.rect.center += self.moveDeltas
+        self.move_deltas.x = min(self.SPEED, max(-self.SPEED, self.move_deltas.x + self.SPEED * self.move_curvature.x))
+        self.move_deltas.y = min(self.SPEED, max(-self.SPEED, self.move_deltas.y + self.SPEED * self.move_curvature.y))
+        self.rect.center += self.move_deltas
         self.rect.clamp_ip(self.play_rect)
-
-    def reset(self):
-        super().reset()
-        self.update_curvature_and_countdowns()

@@ -1,4 +1,4 @@
-import pygame
+""" Grunt Enemy Module """
 import random
 
 from .base import Base
@@ -9,7 +9,7 @@ class Grunt(Base):
     Grunt Enemy
 
     Behavior:
-        Grunts are simple.  They plot the nearest path to the player and move.  
+        Grunts are simple.  They plot the nearest path to the player and move.
         They move fairly slow but speed up as the level progresses.
 
     """

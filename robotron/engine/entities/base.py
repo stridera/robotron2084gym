@@ -1,5 +1,4 @@
 """Sprite Base Module"""
-from enum import Enum
 import math
 import random
 from typing import TYPE_CHECKING, Tuple
@@ -8,19 +7,6 @@ import pygame
 
 if TYPE_CHECKING:
     from ..engine import Engine
-
-
-class Direction(Enum):
-    """Maps a direction to the input integer."""
-    NONE = 0
-    UP = 1
-    UP_RIGHT = 2
-    RIGHT = 3
-    DOWN_RIGHT = 4
-    DOWN = 5
-    DOWN_LEFT = 6
-    LEFT = 7
-    UP_LEFT = 8
 
 
 class Base(pygame.sprite.Sprite):
@@ -34,6 +20,17 @@ class Base(pygame.sprite.Sprite):
     # pylint: disable=attribute-defined-outside-init
 
     SCORE = 0
+
+    # Directions
+    NONE = 0
+    UP = 1
+    UP_RIGHT = 2
+    RIGHT = 3
+    DOWN_RIGHT = 4
+    DOWN = 5
+    DOWN_LEFT = 6
+    LEFT = 7
+    UP_LEFT = 8
 
     def __init__(self, engine: 'Engine', **kwargs):
         super().__init__()
@@ -71,12 +68,12 @@ class Base(pygame.sprite.Sprite):
     def update(self):
         """ Called once per tick to update the sprites state. """
 
-    def get_vector(self, direction: Direction, speed: float = None):
+    def get_vector(self, direction: int, speed: float = None):
         """
         Return a vector for the given direction
 
         Args:
-            direction (Direction): The direction we want the vector to move.
+            direction (int): The direction we want the vector to move.
             speed (float, optional): The speed to assign to the vector. Defaults to `self.speed`.
 
         Returns:
@@ -85,30 +82,32 @@ class Base(pygame.sprite.Sprite):
         speed = speed or self.speed
         if direction == 0:
             return pygame.Vector2(0)
-        elif direction == Direction.UP:
+        elif direction == self.UP:
             return pygame.Vector2(0, -speed)
-        elif direction == Direction.UP_RIGHT:
+        elif direction == self.UP_RIGHT:
             return pygame.Vector2(speed, -speed)
-        elif direction == Direction.RIGHT:
+        elif direction == self.RIGHT:
             return pygame.Vector2(speed, 0)
-        elif direction == Direction.DOWN_RIGHT:
+        elif direction == self.DOWN_RIGHT:
             return pygame.Vector2(speed, speed)
-        elif direction == Direction.DOWN:
+        elif direction == self.DOWN:
             return pygame.Vector2(0, speed)
-        elif direction == Direction.DOWN_LEFT:
+        elif direction == self.DOWN_LEFT:
             return pygame.Vector2(-speed, speed)
-        elif direction == Direction.LEFT:
+        elif direction == self.LEFT:
             return pygame.Vector2(-speed, 0)
-        elif direction == Direction.UP_LEFT:
+        elif direction == self.UP_LEFT:
             return pygame.Vector2(-speed, -speed)
 
-    def valid_move(self, direction: Direction):
+        raise ValueError(f'Invalid direction: {direction}')
+
+    def valid_move(self, direction: int):
         """
         Check to see if moving in the given direction is a valid move.  This is used to notify when
         we should turn for mobs that don't just try to walk into the wall.
 
         Args:
-            direction (Direction): The direction the sprite wants to move.
+            direction (int): The direction the sprite wants to move.
 
         Returns:
             bool: Does moving in the direction result in a valid move or not?
