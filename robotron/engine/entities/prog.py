@@ -15,27 +15,33 @@ class Prog(Family):
         Family members wander around, randomly choosing a new direction.
         Programmed family rush mostly toward the player.  They do not return if the player dies.
     """
+    SPEED = 3
+    MOVE_DELAY = 5
+    PROGRAMMING_TIME = 60
 
     def setup(self):
-        self.speed = 4
-        self.move_delay = 5
+        self.speed = self.config('speed', Prog.SPEED)
+        self.move_delay = self.config('move_delay', Prog.MOVE_DELAY)
+        self.programming_time = self.config('programming_time', Prog.PROGRAMMING_TIME)
+
         self.vector = None
-        self.score = 100
-        self.programming_time = 60
         self.offset = 0
-        self.speed = 3
+        self.trail_group = pygame.sprite.Group()
 
         self.reset()
 
+    def load_config(self):
+        """ While we are 'family' we want to load the prog config for this. """
+        return self.engine.config.get('prog')
+
     def get_animations(self):
         """Returns the images used to animate the sprite."""
-
         prefix = self.args['family']
         return {
-            'left': self.engine.get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
-            'right': self.engine.get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
-            'down': self.engine.get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
-            'up': self.engine.get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
+            'left': self.engine._get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
+            'right': self.engine._get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
+            'down': self.engine._get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
+            'up': self.engine._get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
         }
 
     def update_animation(self):
@@ -69,22 +75,23 @@ class Prog(Family):
             if random.random() < 0.25:
                 y = -y
             self.vector = pygame.Vector2(x, y)
-        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite=self.image, delay=5))
+        self.engine._add_sprite(Floater(self.engine, center=self.rect.center, sprite=self.image, delay=5))
         self.rect.center += self.vector * self.speed
         self.rect.clamp_ip(self.play_rect)
-
-    def get_score(self):
-        return self.score
 
     def collected(self):
         pass
 
     def die(self, killer):
+        """ Need to make sure we destroy the trail."""
+        del killer
+        for sprite in self.trail_group:
+            sprite.kill()
         self.kill()
 
     def update(self):
         """
-        Family members just keep walking continuously
+        While programming the family bounces up and down. After, they move normally.
         """
         self.update_animation()
 
@@ -96,5 +103,3 @@ class Prog(Family):
             self.programming_time -= 1
         else:
             self.move()
-
-        # self.program(self.rect.center)

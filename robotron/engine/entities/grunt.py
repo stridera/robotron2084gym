@@ -17,7 +17,7 @@ class Grunt(Base):
     def get_animations(self):
         """Returns the images used to animate the sprite."""
 
-        return self.engine.get_sprites(['grunt1', 'grunt2', 'grunt1', 'grunt3'])
+        return self.engine._get_sprites(['grunt1', 'grunt2', 'grunt1', 'grunt3'])
 
     def reset(self):
         self.speed = 7

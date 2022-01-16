@@ -2,10 +2,11 @@
 """The Robotron Game Engine"""
 import math
 import os
-from typing import Tuple, List
+from typing import List
 
 import pygame
 
+from .config import Config
 from .graphics import load_graphics
 from .entities import Player, Mommy, Daddy, Mikey, Grunt, Electrode, Hulk, Sphereoid, Quark, Brain
 
@@ -21,28 +22,22 @@ class Engine:
     """
 
     def __init__(self,
-                 screen_size: Tuple[int, int],
-                 play_rect: pygame.Rect,
-                 wave_info: Tuple[Tuple],
                  start_level: int = 1,
                  fps: int = 0,
                  godmode: bool = False,
                  headless: bool = False):
-        self.play_rect = play_rect
-        self.max_play_area_distance = None
-        self.wave_info = wave_info
         self.godmode = godmode
         self.start_level = start_level - 1
         self.level = self.start_level
         self.fps = fps
+
         self.lives = 3
         self.score = 0
         self.extra_lives = 0
         self.done = False
         self.frame = 0
 
-        self.default_reward = -0.1
-        self.reward = self.default_reward
+        self.config = Config()
 
         pygame.init()
         pygame.display.set_caption('Robotron 2084')
@@ -50,18 +45,24 @@ class Engine:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 30)
 
+        screen_size = self.config.get('screen_size')
         if headless:
             print("Using dummy video driver.")
             os.environ["SDL_VIDEODRIVER"] = "dummy"
-            screen_size = (1, 1)
+            # screen_size = (1, 1)
 
         self.screen = pygame.display.set_mode(screen_size)
         self.graphics = load_graphics()
+
+        self.play_area = self.config.get('play_area')
+        (top, left, bottom, right) = self.play_area
+        self.play_rect = pygame.Rect(left, top, right - left, bottom - top)
 
         self.family_group = pygame.sprite.Group()  # Enemies and their bullets.
         self.enemy_group = pygame.sprite.Group()  # Enemies and their bullets.
         self.to_kill_group = pygame.sprite.Group()  # Enemies that need to die to advance the level.
         self.all_group = pygame.sprite.Group()  # All sprites on screen.
+        self.waves = self.config.get('waves')
         self.to_kill_group_types = ['Grunt', 'Sphereoid', 'Enforcer', 'Brain', 'Quark', 'Tank']
         self.enemies = ['grunt', 'electrode', ]
 
@@ -69,7 +70,7 @@ class Engine:
         self.player_box = None
         self.family_collected = 0
 
-        self.initialize_level()
+        self._initialize_level()
 
     def handle_input(self, move, shoot):
         """ Handle Player Input """
@@ -77,9 +78,18 @@ class Engine:
             self.player.move(move)
             self.player.shoot(shoot)
 
-    # State Management
+    def set_level(self, level):
+        """
+        Change the level
 
-    def initialize_level(self):
+        Args:
+            level (int): The level to select.
+        """
+        self.level = level - 1
+        self._initialize_level()
+
+    # State Management
+    def _initialize_level(self):
         """
         Setup a new level.  Removes existing sprites, setups up new sprites.  Zero level values.
         """
@@ -87,46 +97,25 @@ class Engine:
             sprite.kill()
 
         self.player = Player(self)
-        self.add_sprite(self.player)
+        self._add_sprite(self.player)
 
         self.family_collected = 0
 
         # Load all family/enemies for the level.  Mikey should be first to facilitate the 'Mikey bug'
         wave_level = self.level if self.level < 20 else 20 + self.level % 20
-        level_data = self.wave_info[wave_level]
-        print("Level:", wave_level)
-
+        level_data = self.waves[wave_level]
         (grunts, electrodes, hulks, brains, sphereoids, quarks, mommies, daddies, mikeys) = level_data
-        _ = [self.add_family(Mikey(self)) for _ in range(mikeys)]
-        _ = [self.add_family(Mommy(self)) for _ in range(mommies)]
-        _ = [self.add_family(Daddy(self)) for _ in range(daddies)]
-        _ = [self.add_enemy(Grunt(self)) for _ in range(grunts)]
-        _ = [self.add_enemy(Electrode(self)) for _ in range(electrodes)]
-        _ = [self.add_enemy(Hulk(self)) for _ in range(hulks)]
-        _ = [self.add_enemy(Sphereoid(self)) for _ in range(sphereoids)]
-        _ = [self.add_enemy(Quark(self)) for _ in range(quarks)]
-        _ = [self.add_enemy(Brain(self)) for _ in range(brains)]
+        _ = [self._add_family(Mikey(self)) for _ in range(mikeys)]
+        _ = [self._add_family(Mommy(self)) for _ in range(mommies)]
+        _ = [self._add_family(Daddy(self)) for _ in range(daddies)]
+        _ = [self._add_enemy(Grunt(self)) for _ in range(grunts)]
+        _ = [self._add_enemy(Electrode(self)) for _ in range(electrodes)]
+        _ = [self._add_enemy(Hulk(self)) for _ in range(hulks)]
+        _ = [self._add_enemy(Sphereoid(self)) for _ in range(sphereoids)]
+        _ = [self._add_enemy(Quark(self)) for _ in range(quarks)]
+        _ = [self._add_enemy(Brain(self)) for _ in range(brains)]
 
-    def add_score(self, score):
-        """
-        Add a value to the score.
-
-        Args:
-            score (int): The value to add to the score.
-        """
-        self.score += score
-        self.reward = min(1.0, self.reward + 0.3)
-
-    def get_score(self):
-        """
-        Get the current score.
-
-        Returns:
-            int: The current score.
-        """
-        return self.score
-
-    def set_family_collected(self):
+    def _set_family_collected(self):
         """
         Called when the player collects a human.
         You get 1000 for the first human rescued. Then it will progress at 2000, 3000,
@@ -139,20 +128,9 @@ class Engine:
         """
         self.family_collected += 1
         self.score += min(self.family_collected * 1000, 5000)
-        self.reward = 1.0
         return self.family_collected
 
-    def set_level(self, level):
-        """
-        Change the level
-
-        Args:
-            level (int): The level to select.
-        """
-        self.level = level - 1
-        self.initialize_level()
-
-    def get_play_area_distance(self):
+    def _get_play_area_distance(self):
         """
         Get the distance from the top left to the bottom right of the play area.  This is the
         maximum distance from the player an enemy can be.
@@ -160,12 +138,11 @@ class Engine:
         Returns:
             float: The max distance two sprites can be in the play area.
         """
-        if not self.max_play_area_distance:
-            w, h = self.play_rect.size
-            self.max_play_area_distance = math.hypot(w, h)
-        return self.max_play_area_distance
+        w, h = self.play_rect.size
+        return math.hypot(w, h)
 
-    def get_family_group(self) -> pygame.sprite.Group:
+    # Sprite Management
+    def _get_family_group(self) -> pygame.sprite.Group:
         """
         Get the group of all family sprites.
 
@@ -174,7 +151,7 @@ class Engine:
         """
         return self.family_group
 
-    def get_enemy_group(self) -> pygame.sprite.Group:
+    def _get_enemy_group(self) -> pygame.sprite.Group:
         """
         Returns all sprites listed as an enemy.
 
@@ -183,7 +160,7 @@ class Engine:
         """
         return self.enemy_group
 
-    def get_all_group(self) -> pygame.sprite.Group:
+    def _get_all_group(self) -> pygame.sprite.Group:
         """
         Get all sprites on screen.
 
@@ -192,8 +169,7 @@ class Engine:
         """
         return self.all_group
 
-    # Sprite Management
-    def get_sprite(self, sprite_name: str) -> pygame.Surface:
+    def _get_sprite(self, sprite_name: str) -> pygame.Surface:
         """
         Return the sprite graphics by name.
 
@@ -205,7 +181,7 @@ class Engine:
         """
         return self.graphics[sprite_name]
 
-    def get_sprites(self, sprite_names: List[str]) -> List[pygame.Surface]:
+    def _get_sprites(self, sprite_names: List[str]) -> List[pygame.Surface]:
         """
         Get the images for all sprites in a list.
 
@@ -217,7 +193,7 @@ class Engine:
         """
         return [self.graphics[name] for name in sprite_names]
 
-    def get_player_box(self):
+    def _get_player_box(self):
         """
         Safe area around player to not place enemies on load.
 
@@ -231,19 +207,19 @@ class Engine:
 
         return self.player_box
 
-    def add_background(self):
+    def _add_background(self):
         """ Set the background color and draw the play area box """
         self.screen.fill((0, 0, 0))
         pygame.draw.rect(self.screen, [238, 5, 8], self.play_rect.inflate(15, 15), 5)
 
-    def add_info(self):
+    def _add_info(self):
         """ Add the text info for human consumption.  Does not replicate the original game. """
         text = self.font.render(
             f'Score: {self.score} Level: {self.level + 1} Lives: {self.lives} {"GAME OVER" if self.done else ""}',
             True, (255, 255, 255), (0, 0, 0))
         self.screen.blit(text, (self.play_rect.x, self.play_rect.y - 40))
 
-    def add_sprite(self, sprite: pygame.sprite):
+    def _add_sprite(self, sprite: pygame.sprite):
         """
         Add a sprite to the screen.  Used for sprites that do not interact with the player.
 
@@ -252,7 +228,7 @@ class Engine:
         """
         self.all_group.add(sprite)
 
-    def add_family(self, family: pygame.sprite):
+    def _add_family(self, family: pygame.sprite):
         """
         Add a family member.  These sprites are collected by the player and targeted by some enemies.
 
@@ -262,7 +238,7 @@ class Engine:
         self.family_group.add(family)
         self.all_group.add(family)
 
-    def add_enemy(self, enemy: pygame.sprite):
+    def _add_enemy(self, enemy: pygame.sprite):
         """
         Add an enemy sprite.  These sprites are harmful to the player.
 
@@ -276,10 +252,9 @@ class Engine:
             self.to_kill_group.add(enemy)
 
     # Lifecycle Management
-
     def update(self):
         """
-        The allmighty update loops.  Runs once per frame to update the world.
+        The allmighty update loops. Triggers the world update.
 
         """
         pygame.event.pump()
@@ -306,20 +281,17 @@ class Engine:
 
             if not self.to_kill_group:
                 self.level += 1
-                self.initialize_level()
-
-        reward = self.reward
-        self.reward = self.default_reward
+                self._initialize_level()
 
         self.draw()
         image = self.get_image()
 
-        return (image, reward, self.score, self.lives, self.level, self.done)
+        return (image, self.score, self.lives, self.level, self.done)
 
     def draw(self):
         """ Paint the window. """
-        self.add_background()
-        self.add_info()
+        self._add_background()
+        self._add_info()
         self.all_group.draw(self.screen)
         pygame.display.update()
 
@@ -328,7 +300,7 @@ class Engine:
         Reset the game
 
         Returns:
-            List: Returns the latest image.
+            List: Returns the initial image.
         """
         self.frame = 0
         self.level = self.start_level
@@ -337,7 +309,7 @@ class Engine:
         self.extra_lives = 0
         self.done = False
 
-        self.initialize_level()
+        self._initialize_level()
 
         return self.get_image()
 
@@ -345,7 +317,6 @@ class Engine:
     def get_image() -> List:
         """
         Return the latest image.
-
 
         Returns:
             List: An image array.

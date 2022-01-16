@@ -18,7 +18,7 @@ class Floater(Base):
         if 'sprite' in keys:
             sprite = self.args['sprite']
         elif 'sprite_name' in keys:
-            sprite = self.engine.get_sprite(str(self.args['sprite_name']))
+            sprite = self.engine._get_sprite(str(self.args['sprite_name']))
         else:
             raise ValueError("Invalid sprite passed.")
 

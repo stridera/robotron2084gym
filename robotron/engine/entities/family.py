@@ -15,13 +15,19 @@ class Family(Base):
         Family members wander around, randomly choosing a new direction.
         Programmed family rush mostly toward the player.  They do not return if the player dies.
     """
+    SPEED = 4
+    MOVE_DELAY = 5
 
     def setup(self):
         """ Setup sprite """
-        self.speed = 4
-        self.move_delay = 5
+        self.speed = self.config('speed', self.SPEED)
+        self.move_delay = self.config('move_delay', self.MOVE_DELAY)
 
         self.reset()
+
+    def load_config(self):
+        """ Overridden.  All family members use the same config. """
+        return self.engine.config.get('family')
 
     def reset(self):
         """ Reset the sprite. """
@@ -33,10 +39,10 @@ class Family(Base):
         """Returns the images used to animate the sprite."""
         prefix = self.PREFIX
         return {
-            'left': self.engine.get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
-            'right': self.engine.get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
-            'down': self.engine.get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
-            'up': self.engine.get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
+            'left': self.engine._get_sprites([prefix + '1', prefix + '2', prefix + '1', prefix + '3']),
+            'right': self.engine._get_sprites([prefix + '4', prefix + '5', prefix + '4', prefix + '6']),
+            'down': self.engine._get_sprites([prefix + '7', prefix + '8', prefix + '7', prefix + '9']),
+            'up': self.engine._get_sprites([prefix + '10', prefix + '11', prefix + '10', prefix + '12']),
         }
 
     def update_animation(self):
@@ -68,18 +74,15 @@ class Family(Base):
             self.rect.center += self.vector
             self.move_direction = direction
 
-    def get_score(self):
-        """ Happens in the engine. """
-
     def collected(self):
         """ Triggered when """
-        level = self.engine.set_family_collected()
+        level = self.engine._set_family_collected()
         level = min(level, 5)
-        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name=str(level*1000)))
+        self.engine._add_sprite(Floater(self.engine, center=self.rect.center, sprite_name=str(level*1000)))
         self.kill()
 
     def die(self, killer):
-        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='familydeath'))
+        self.engine._add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='familydeath'))
         self.kill()
 
     def update(self):
@@ -90,7 +93,7 @@ class Family(Base):
         if self.engine.frame % self.move_delay == 0:
             self.move()
 
-        for sprite in pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False):
+        for sprite in pygame.sprite.spritecollide(self, self.engine._get_enemy_group(), False):
             if sprite.__class__.__name__ == 'Hulk':
                 self.die(sprite)
 

@@ -16,16 +16,15 @@ class Generator(Base):
         do the same cycle though sprites and eventually spawn either enforcers or tanks.  Both
         will revive on player death unless all spawns are dead.
     """
-    SCORE = 1000
     PRE_SPAWN_CYCLE_LIMIT = 6  # Until we start spawning, we only show the first 6 images.
-    SPEED = 5
-    SPAWN_DELAY = 64
+    SPAWN_DELAY = [8, 64]
+    MAX_SPAWN_COUNT = [1, 6]
 
     def reset(self):
         self.cycle = self.PRE_SPAWN_CYCLE_LIMIT
-        self.spawn_delay = random.randrange(self.SPAWN_DELAY / 8, self.SPAWN_DELAY)
-        self.spawn_count = random.randrange(1, 6)
-        self.spawning = False
+        self.spawn_delays = self.config('spawn_delays', self.SPAWN_DELAY)
+        self.spawn_delay = random.randrange(*self.spawn_delays)
+        self.spawn_count = random.randrange(*self.config('spawn_counts', self.MAX_SPAWN_COUNT))
         self.alive = True
         self.move_curvature = pygame.Vector2(0)
         self.move_deltas = pygame.Vector2(0)
@@ -56,19 +55,18 @@ class Generator(Base):
     def spawn(self):
         """ Spawn the babies. """
         self.cycle = len(self.animations)
-        self.spawning = True
-        self.spawn_delay = random.randrange(self.SPAWN_DELAY // 8, self.SPAWN_DELAY // 4)
+        self.spawn_delay = random.randrange(*self.spawn_delays)
         self.spawn_count -= 1
 
         spawn = self.get_spawn()
-        self.engine.add_enemy(spawn)
+        self.engine._add_enemy(spawn)
         self.spawns.add(spawn)
         if self.spawn_count == 0:
             self.vanish()
 
     def die(self, killer):
         del killer
-        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='1000'))
+        self.engine._add_sprite(Floater(self.engine, center=self.rect.center, sprite_name='1000'))
         self.vanish()
 
     def vanish(self):

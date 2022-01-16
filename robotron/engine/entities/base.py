@@ -16,10 +16,6 @@ class Base(pygame.sprite.Sprite):
     # There are a lot of attributes.  That's fine.
     # pylint: disable=too-many-instance-attributes
     # Each subclass will setup it's own params in the setup() method, and since pylint doesn't like that,
-    # I'm ignoring defining attributes outside of init.
-    # pylint: disable=attribute-defined-outside-init
-
-    SCORE = 0
 
     # Directions
     NONE = 0
@@ -37,6 +33,7 @@ class Base(pygame.sprite.Sprite):
         self.engine = engine
         self.play_rect = self.engine.play_rect
         self.args = kwargs
+        self.config_dict = self.load_config()
 
         self.cycle = None
         self.animations = self.get_animations()
@@ -55,6 +52,23 @@ class Base(pygame.sprite.Sprite):
             self.rect.center = kwargs['center']
         else:
             self.random_location()
+
+    def load_config(self):
+        return self.engine.config.get(self.__class__.__name__.lower())
+
+    def config(self, key: str, default: any = None):
+        if key not in self.config_dict:
+            print(f"Warning: Missing config key for class {self.__class__.__name__}: {key}")
+        return self.config_dict[key] if key in self.config_dict else default
+
+    def score(self):
+        """
+        Get the score for the player
+
+        Returns:
+            int: The score value of the sprite
+        """
+        return self.config('score')
 
     def get_animations(self):
         """
@@ -176,15 +190,6 @@ class Base(pygame.sprite.Sprite):
         self.update_animation()
         self.random_location()
 
-    def get_score(self):
-        """
-        Get the score for the player
-
-        Returns:
-            int: The score value of the sprite
-        """
-        return self.SCORE
-
     def random_direction(self):
         """
         Return a random integer representing one of the 8 cardinal directions.
@@ -201,7 +206,7 @@ class Base(pygame.sprite.Sprite):
         (sprite_width, sprite_height) = self.image.get_rect().size
 
         self.rect = self.image.get_rect()
-        player_box = self.engine.get_player_box()
+        player_box = self.engine._get_player_box()
 
         valid_location = False
         tries = 0

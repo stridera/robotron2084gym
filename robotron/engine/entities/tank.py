@@ -13,27 +13,29 @@ class TankShell(Base):
 
     MIN_SPEED = 10
     MAX_SPEED = 20
-    DEFAULT_TIME_TO_LIVE = 80
+    TIME_TO_LIVE = 80
+
+    WIDTH = HEIGHT = 16
+    WEIGHT = 2
+
+    def setup(self):
+        self.min_speed = self.config('min_speed', self.MIN_SPEED)
+        self.max_speed = self.config('max_speed', self.MAX_SPEED)
+        self.time_to_live = self.config('time_to_live', self.TIME_TO_LIVE)
+        self.vector = None
 
     def get_animations(self):
         """Returns the images used to animate the sprite."""
-
-        width = height = 16
-        weight = 2
-        image = pygame.Surface([width, height]).convert()
-        pygame.draw.circle(image, (255, 0, 0), (width//2, height//2), 8, weight)
+        image = pygame.Surface([self.WIDTH, self.HEIGHT]).convert()
+        pygame.draw.circle(image, (255, 0, 0), (self.WIDTH//2, self.HEIGHT//2), 8, self.WEIGHT)
         return [image]
-
-    def setup(self):
-        self.time_to_live = self.DEFAULT_TIME_TO_LIVE
-        self.vector = None
 
     def get_trajectory(self):
         """ Calculate the new trajectory. """
         if not self.vector:
             distance_to_player = self.get_distance_to_player()
-            max_distance = self.engine.get_play_area_distance()
-            self.speed = ((distance_to_player * self.MAX_SPEED) / max_distance) + self.MIN_SPEED
+            max_distance = self.engine._get_play_area_distance()
+            self.speed = ((distance_to_player * self.max_speed) / max_distance) + self.min_speed
             x, y = self.rect.center
             player_x, player_y = self.engine.player.rect.center
             attack = randrange(10)
@@ -83,21 +85,24 @@ class Tank(Base):
     """
     Tank Enemy
 
+    Spwaned by Quarks.
+
     Behavior:
         Tanks drive around and shoot bullets that bounce around the scene.
     """
     BULLETS = 20
-
-    def get_animations(self):
-        """Returns the images used to animate the sprite."""
-
-        return self.engine.get_sprites(['tank1', 'tank2', 'tank3', 'tank4'])
+    SHOOT_DELAYS = (15, 60)
 
     def setup(self):
         """Setup the sprite."""
-        self.bullets = 20
+        self.bullets = self.config('bullets', self.BULLETS)
+        self.shoot_delays = self.config('shoot_delays', self.SHOOT_DELAYS)
+        self.shoot_delay = randint(*self.shoot_delays)
         self.active = 0
-        self.shoot_delay = randint(10, 30)
+
+    def get_animations(self):
+        """Returns the images used to animate the sprite."""
+        return self.engine._get_sprites(['tank1', 'tank2', 'tank3', 'tank4'])
 
     def move(self):
         """Move the sprite."""
@@ -115,9 +120,9 @@ class Tank(Base):
             self.shoot_delay -= 1
             if self.shoot_delay == 0:
                 self.bullets -= 1
-                self.shoot_delay = randint(5, 30)
+                self.shoot_delay = randint(*self.shoot_delays)
                 bullet = TankShell(self.engine, center=self.rect.center)
-                self.engine.add_sprite(bullet)
+                self.engine._add_sprite(bullet)
 
     def reset(self):
         """Reset the sprite after the player dies."""

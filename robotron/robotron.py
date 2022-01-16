@@ -18,20 +18,20 @@ Example:
 
 """
 from typing import Tuple
-
-import pygame
 import numpy as np
 import cv2
+import gym
 
-from . import config
 from .engine import Engine
 from .utils import crop
 
 
-class RobotronEnv:
+class RobotronEnv(gym.Env):
     """
     The Robotron 2084 Environment.
     """
+
+    FAMILY_REWARD = 10.0
 
     def __init__(self, level: int = 1, fps: int = 30, godmode: bool = False, headless: bool = True):
         """
@@ -43,12 +43,14 @@ class RobotronEnv:
             godmode (bool): Can the player die?  Default: False
             headless (bool): Skip creating the screen.
         """
-        (top, left, bottom, right) = config.PLAY_AREA
-        self.play_area = pygame.Rect(left, top, right - left, bottom - top)
-        self.engine = Engine(config.SCREEN_SIZE, self.play_area, config.WAVES, level, fps, godmode, headless)
-        self._level = level
-        self._lives = 3
-        self._dead = False
+        self.engine = Engine(level, fps, godmode, headless)
+        self.score = 0
+        width, height = self.engine.play_rect.size
+        play_area = (height, width, 3)
+
+        # Gym Requirements
+        self.action_space = gym.spaces.Discrete(81)
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
 
     def reset(self):
         """
@@ -57,8 +59,8 @@ class RobotronEnv:
         returns:
             np.ndarray: The initial obs
         """
-        print("Resetting")
-        return self.engine.reset()
+        self.score = 0
+        return self.get_state(self.engine.reset())
 
     def step(self,  action: int) -> Tuple[np.ndarray, int, bool, dict]:
         r"""
@@ -93,46 +95,30 @@ class RobotronEnv:
         move = action // 9
         shoot = action % 9
         self.engine.handle_input(move, shoot)
-        (image, reward, score, lives, level, dead) = self.engine.update()
+        (image, score, lives, level, dead) = self.engine.update()
 
-        self._lives = lives
-        self._level = level
-        self._dead = dead
+        reward = (self.engine.score - self.score) / 100.0
+        self.score = self.engine.score
 
-        return image, reward, dead or level > 1, {
+        return self.get_state(image), reward, dead or level > 1, {
             'score': score,
             'level': level,
             'lives': lives
         }
 
-    def get_state(self):
+    def get_state(self, image):
         """
         Convert the image into a 84 by 84 pixel image in a format for deep learning agents to easily consume.
 
         returns:
             np.ndarray: The game image for the current step
         """
-        image = self.engine.get_image()
-        image = crop(image, config.PLAY_AREA)
-        image = np.transpose(image, (1, 0, 2))
-        image = cv2.resize(image, (84, 84), interpolation=cv2.INTER_LINEAR)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) / 255.
+        image = crop(image, self.engine.play_area)
+        # cv2.imshow('image', image)
+        # cv2.waitKey(0)
+        # image = cv2.resize(image, (84, 84), interpolation=cv2.INTER_LINEAR)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return image
 
     def render(self):
         """ TODO:  Render the game on the screen while playing. """
-
-    @property
-    def level(self):
-        """ The current level """
-        return self._level
-
-    @property
-    def lives(self):
-        """ Current Lives Remaining """
-        return self._lives
-
-    @property
-    def game_over(self):
-        """ Is the game over? """
-        return self._dead

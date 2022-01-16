@@ -42,9 +42,9 @@ class Bullet(Base):
         vector = self.get_vector(self.direction)
         self.rect.center += vector
 
-        hits = pygame.sprite.spritecollide(self, self.engine.get_enemy_group(), False)
+        hits = pygame.sprite.spritecollide(self, self.engine._get_enemy_group(), False)
         for sprite in hits:
-            self.engine.add_score(sprite.get_score())
+            self.engine.score += sprite.score()
             sprite.die(self)
             self.kill()
 
@@ -73,10 +73,10 @@ class Player(pygame.sprite.Sprite):
         self.image = None
 
         self.animations = {
-            'left': engine.get_sprites(['player1', 'player2', 'player1', 'player3']),
-            'right': engine.get_sprites(['player4', 'player5', 'player4', 'player6']),
-            'down': engine.get_sprites(['player7', 'player8', 'player7', 'player9']),
-            'up': engine.get_sprites(['player10', 'player11', 'player10', 'player12']),
+            'left': engine._get_sprites(['player1', 'player2', 'player1', 'player3']),
+            'right': engine._get_sprites(['player4', 'player5', 'player4', 'player6']),
+            'down': engine._get_sprites(['player7', 'player8', 'player7', 'player9']),
+            'up': engine._get_sprites(['player10', 'player11', 'player10', 'player12']),
         }
 
         self.play_rect = engine.play_rect
@@ -127,7 +127,7 @@ class Player(pygame.sprite.Sprite):
         if shoot:
             if self.shoot_delay_remaining <= 0:
                 bullet = Bullet(self.engine, self.rect.x, self.rect.y, shoot)
-                self.engine.add_sprite(bullet)
+                self.engine._add_sprite(bullet)
                 self.shoot_delay_remaining = self.shoot_delay
 
     def update(self):

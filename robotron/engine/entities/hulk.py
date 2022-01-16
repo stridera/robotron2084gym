@@ -21,10 +21,10 @@ class Hulk(Base):
         """Returns the images used to animate the sprite."""
 
         return {
-            'left': self.engine.get_sprites(['hulk1', 'hulk2', 'hulk1', 'hulk3']),
-            'right': self.engine.get_sprites(['hulk7', 'hulk8', 'hulk7', 'hulk9']),
-            'down': self.engine.get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6']),
-            'up': self.engine.get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6'])
+            'left': self.engine._get_sprites(['hulk1', 'hulk2', 'hulk1', 'hulk3']),
+            'right': self.engine._get_sprites(['hulk7', 'hulk8', 'hulk7', 'hulk9']),
+            'down': self.engine._get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6']),
+            'up': self.engine._get_sprites(['hulk4', 'hulk5', 'hulk4', 'hulk6'])
         }
 
     def reset(self):

@@ -1,5 +1,5 @@
-screen_size: (1280, 720)
-play_area: (116, 309, 608, 974)
+screen_size: [1280, 720]
+play_area: [116, 309, 608, 974]
 resource_path: "resources/"
 waves:
     # Grunts, Electrodes, Hulks, Brains, Sphereoids, Quarks, Mommies, Daddies, Mikeys
@@ -49,26 +49,58 @@ extra_life_score: 25000
 grunt:
     score: 100
     speed: 7
-    move_delay: (5, 25)
+    move_delay: [5, 25]
 electrode:
     score: 0
 hulk:
     score: 0
 brain:
     score: 500
-cruise_missile:
+    speed: 1
+    use_mikey_bug: True
+    programming_time: 60
+    programming_offset: 5
+    shoot_delays: [80, 620]
+cruisemissile:
     score: 25
+    speed: 3
+    time_to_live: 200
 sphereoid:
     score: 1000
+    speed: 5
+    move_delays: [10, 32]
+    spawn_delays: [20, 64]
+    spawn_counts: [1, 5]
+    move_curvatures: [-50, 50]
 enforcer:
     score: 150
-quarks:
+    max_speed: 20
+    shoot_delays: [15, 50]
+enforcerbullet:
+    score: 0
+    max_speed: 30
+    time_to_live: 50
+quark:
     score: 1000
-tanks:
+    speed: 0.5
+    move_delays: [5, 30]
+    spawn_delays: [8, 120]
+    spawn_counts: [1, 5]
+tank:
     score: 200
-tank_shell:
+    bullets: 20
+    shoot_delays: [35, 330]
+tankshell:
     score: 50
+    min_speed: 10
+    max_speed: 20
+    time_to_live: 80
 family:
+    speed: 4
+    move_delay: 5
     score: [1000, 2000, 3000, 4000, 5000]
 prog:
     score: 100
+    speed: 4
+    move_delay: 5
+    programming_time: 60

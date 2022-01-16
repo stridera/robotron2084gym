@@ -17,15 +17,16 @@ class CruiseMissile(Base):
     Behavior:
     - The missiles zig zag toward the player.
     """
-    SCORE = 25
-    SPEED = 5
-    DEFAULT_TIME_TO_LIVE = 50
+    SPEED = 3
+    TIME_TO_LIVE = 50
     WIDTH = HEIGHT = 4
 
     def setup(self):
         """Setup"""
-        self.time_to_live = self.DEFAULT_TIME_TO_LIVE
+        self.speed = self.config('speed', self.SPEED)
+        self.time_to_live = self.config('time_to_live', self.TIME_TO_LIVE)
         self.vector = None
+        self.trail_group = pygame.sprite.Group()
         self.trail_image = pygame.Surface([self.WIDTH, self.HEIGHT]).convert()
         pygame.draw.circle(self.trail_image, (255, 255, 255), (self.WIDTH//2, self.HEIGHT//2), 8, 0)
 
@@ -40,9 +41,11 @@ class CruiseMissile(Base):
 
     def move(self):
         """Move the sprite."""
-        self.engine.add_sprite(Floater(self.engine, center=self.rect.center, sprite=self.trail_image, delay=20))
+        trail = Floater(self.engine, center=self.rect.center, sprite=self.trail_image, delay=20)
+        self.trail_group.add(trail)
+        self.engine._add_sprite(trail)
         self.vector = self.get_vector_to_player()
-        self.rect.center += self.vector * self.SPEED
+        self.rect.center += self.vector * self.speed
 
     def update(self):
         """Sprite update method."""
@@ -52,6 +55,13 @@ class CruiseMissile(Base):
         else:
             self.move()
 
+    def die(self, killer):
+        """Kill the sprite."""
+        del killer
+        for sprite in self.trail_group:
+            sprite.kill()
+        self.kill()
+
 
 class Brain(Base):
     """
@@ -60,31 +70,38 @@ class Brain(Base):
     Behavior:
         Brains fly around, brainwash humans, and shoot missiles.
     """
+    SPEED = 1
+
+    PROGRAMMING_TIME = 60
+    PROGRAMMING_OFFSET = 5
+    SHOOT_DELAY = [30, 70]
 
     def get_animations(self):
         """Returns the images used to animate the sprite."""
 
         return {
-            'left': self.engine.get_sprites(['brain1', 'brain2', 'brain1', 'brain3']),
-            'right': self.engine.get_sprites(['brain4', 'brain5', 'brain4', 'brain6']),
-            'up': self.engine.get_sprites(['brain7', 'brain8', 'brain7', 'brain9']),
-            'down': self.engine.get_sprites(['brain10', 'brain11', 'brain10', 'brain12']),
+            'left': self.engine._get_sprites(['brain1', 'brain2', 'brain1', 'brain3']),
+            'right': self.engine._get_sprites(['brain4', 'brain5', 'brain4', 'brain6']),
+            'up': self.engine._get_sprites(['brain7', 'brain8', 'brain7', 'brain9']),
+            'down': self.engine._get_sprites(['brain10', 'brain11', 'brain10', 'brain12']),
         }
 
     def reset(self):
         self.update_animation()
         self.random_location()
 
-        use_mikey_bug = True
+        use_mikey_bug = self.config('use_mikey_bug', True)
+        self.shoot_delays = self.config('shoot_delays', self.SHOOT_DELAY)
+
         family_sprites = self.engine.family_group.sprites()
         self.target = family_sprites[0] if family_sprites and use_mikey_bug else None
-        self.speed = 1
+        self.speed = self.config('speed') or self.SPEED
         self.vector = pygame.Vector2(0)
-        self.shoot_delay = randint(30, 70)
+        self.shoot_delay = randint(*self.shoot_delays)
 
         self.programming = False
-        self.programming_time = 60
-        self.programming_offset = 5
+        self.programming_time = self.config('programming_time', self.PROGRAMMING_TIME)
+        self.programming_offset = self.config('programming_offset', self.PROGRAMMING_OFFSET)
         self.countdown = 0
 
     def update(self):
@@ -143,7 +160,7 @@ class Brain(Base):
         else:
             self.animation_direction = 'right'
             center = srect.right + self.programming_offset + (trect.width // 2), srect.centery
-        self.engine.add_enemy(Prog(self.engine, center=center, family=self.target.PREFIX))
+        self.engine._add_enemy(Prog(self.engine, center=center, family=self.target.PREFIX))
         self.target.kill()
 
     def program(self):
@@ -158,5 +175,5 @@ class Brain(Base):
 
     def shoot(self):
         """ Fire the guns. """
-        self.shoot_delay = randint(30, 70)
-        self.engine.add_enemy(CruiseMissile(self.engine, center=self.rect.center))
+        self.shoot_delay = randint(*self.shoot_delays)
+        self.engine._add_enemy(CruiseMissile(self.engine, center=self.rect.center))
