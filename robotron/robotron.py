@@ -100,7 +100,7 @@ class RobotronEnv(gym.Env):
         reward = (self.engine.score - self.score) / 100.0
         self.score = self.engine.score
 
-        return self.get_state(image), reward, dead or level > 1, {
+        return self.get_state(image), reward, dead, {
             'score': score,
             'level': level,
             'lives': lives
