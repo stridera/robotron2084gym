@@ -40,7 +40,8 @@ class RobotronEnv(gym.Env):
         args:
             level (int): What level to start at.  Default: 1
             fps (int): Frames per secont to run at.  Default: 30
-            godmode (bool): Can the player die?  Default: False
+            return_en
+            godmode (bool): Are you a god? (Can't die.) Default: False
             headless (bool): Skip creating the screen.
         """
         self.engine = Engine(level, fps, godmode, headless)
@@ -103,7 +104,9 @@ class RobotronEnv(gym.Env):
         return self.get_state(image), reward, dead, {
             'score': score,
             'level': level,
-            'lives': lives
+            'lives': lives,
+            'family': self.engine.family_remaining(),
+            'data': self.engine.get_enemy_data(),
         }
 
     def get_state(self, image):

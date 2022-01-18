@@ -95,7 +95,12 @@ _image, reward, done, info_
 - _Image_: Returns the current cropped out play area.
 - _reward_: The current score. Probably want to change this to make it return a better reward.
 - _done_: All lives are exhausted. Game Over.
-- _info_: Currently returns nothing. Added to maintain parity with the open ai gym.
+- _info_: Returns a list of extra state data:
+  - score: Current score
+  - level: Current level
+  - lives: Lives remaining
+  - family: Family remaining
+  - data: List of Tuples containing each sprites X, Y, and name.  Related to the play area so 0,0 to obs space.
 
 **Example**
 

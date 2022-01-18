@@ -2,7 +2,7 @@
 """The Robotron Game Engine"""
 import math
 import os
-from typing import List
+from typing import List, Tuple
 
 import pygame
 
@@ -294,6 +294,32 @@ class Engine:
         self._add_info()
         self.all_group.draw(self.screen)
         pygame.display.update()
+
+    def family_remaining(self):
+        """
+        Return the number of family members remaining.
+
+        Returns:
+            int: The number of family members remaining.
+        """
+        return len(self.family_group)
+
+    def get_enemy_data(self) -> List[Tuple[int, int, str]]:
+        """
+        Get the data for all meaningful sprites.  Includes players, bullets, and enemies.
+        We skip floaters since those are just trails or points and can't be interacted with.
+
+        Returns:
+            List[Tuple[int, int, str]]: A list of tuples of (x, y, sprite_name).
+        """
+        (top, left, _, _) = self.play_area
+
+        data = []
+        for enemy in self.all_group:
+            if enemy.__class__.__name__ != 'Floater':
+                data.append((enemy.rect.x - left, enemy.rect.y - top, enemy.__class__.__name__))
+
+        return data
 
     def reset(self):
         """

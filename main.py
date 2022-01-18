@@ -194,7 +194,7 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
                 env.reset()
 
             action = left * 9 + right
-            env.step(action)
+            print(env.step(action))
 
     except KeyboardInterrupt:
         print("Interrupt detected.  Exiting...")
