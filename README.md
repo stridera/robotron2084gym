@@ -1,4 +1,4 @@
-# Robotron 2084
+# Robotron 2084 Gym Environment
 
 This is a remake of the XBox (and older, using xbox graphics) game of Robotron 2084.
 
@@ -13,7 +13,7 @@ Working on simulating the XBox look and feel in an attempt to train a model and 
 Insure you have python3 installed and venv. In ubuntu:
 
 ```bash
-sudo apt install python3.8 python3.8-venv
+sudo apt install python3.9 python3.9-venv
 ```
 
 Clone, setup venv, install requirements:
@@ -92,7 +92,7 @@ action = left * 9 + right
 
 _image, reward, done, info_
 
-- _Image_: The current frame of the game. Need to crop out the play area. Done this way to maintain parity with reading from the hdmi from the xbox.
+- _Image_: Returns the current cropped out play area.
 - _reward_: The current score. Probably want to change this to make it return a better reward.
 - _done_: All lives are exhausted. Game Over.
 - _info_: Currently returns nothing. Added to maintain parity with the open ai gym.
@@ -120,14 +120,14 @@ image, reward, done, info = env.step(action)
   - [ ] Grunts speed up as the time advances on a stage.
 - [x] Add Electrodes.
   - [x] Unlike companion cubes, Electrodes will stab you. Electrodes kill grunts and player.
-- [ ] Add Family Members.
-- [ ] Add Hulks.
-- [ ] Add Brains.
-- [ ] Add Spheroids.
-- [ ] Add Enforcers.
-- [ ] Add Quarks.
-- [ ] Add Tanks.
-- [ ] Properly handle rolling over level 40. (Waves restart at 21 and repeat.)
+- [x] Add Family Members.
+- [x] Add Hulks.
+- [x] Add Brains.
+- [x] Add Spheroids.
+- [x] Add Enforcers.
+- [x] Add Quarks.
+- [x] Add Tanks.
+- [x] Properly handle rolling over level 40. (Waves restart at 21 and repeat.)
 - [ ] Add flashing effects similar to in game.
 - [ ] Add warp-in/warp-out effects.
 
