@@ -52,6 +52,7 @@ class RobotronEnv(gym.Env):
         # Gym Requirements
         self.action_space = gym.spaces.Discrete(81)
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
+        self.metadata = {'render.modes': ['human', 'rgb_array']}
 
     def reset(self):
         """
@@ -123,5 +124,10 @@ class RobotronEnv(gym.Env):
         # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return image
 
-    def render(self):
+    def render(self, mode):
         """ TODO:  Render the game on the screen while playing. """
+        image = self.engine.get_image()
+        if mode == 'human':
+            return image
+        else:
+            return self.get_state(image)
