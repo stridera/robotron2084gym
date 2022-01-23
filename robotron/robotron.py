@@ -53,7 +53,7 @@ class RobotronEnv(gym.Env):
 
         # Gym Requirements
         actions = 8 if always_move else 9
-        self.action_space = gym.spaces.MultiDiscrete(actions, actions)
+        self.action_space = gym.spaces.MultiDiscrete([actions, actions])
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
 
@@ -74,8 +74,7 @@ class RobotronEnv(gym.Env):
         https://gym.openai.com/docs/#observations
 
         args:
-            action (int): The inputs to the game.  The expected input should
-            be between 0 and 81 (9*9).  This consists of two ints between 0-8
+            action (Tuple[int, int]): The inputs to the game. This consists of two ints between 0-8
             following the cardinal points of the joystick.
 
                 8   1   2
@@ -84,9 +83,7 @@ class RobotronEnv(gym.Env):
                   / | \
                 6   5   4
 
-            Final equation should be `action = left * 9 + right`
-
-            Consider moving to bits?  `action = left << 4 | right`
+            If we have always_move set to True, we drop the Noop action. (Basically add 1 to each action)
 
         returns:
             (np.ndarray, float, bool, dict): the obs, reward, done, and info
@@ -94,12 +91,12 @@ class RobotronEnv(gym.Env):
         raises:
             ValueError: Raised if input is invalid.
         """
-        if not 0 <= action <= 81:
+        move, shoot = action
+
+        if not 0 <= move <= 9 - self.action_mod or not 0 <= shoot <= 9 - self.action_mod:
             raise ValueError("Invalid Action")
 
-        move = action // 9 + self.action_mod
-        shoot = action % 9 + self.action_mod
-        self.engine.handle_input(move, shoot)
+        self.engine.handle_input(move + self.action_mod, shoot + self.action_mod)
         (image, score, lives, level, dead) = self.engine.update()
 
         reward = (self.engine.score - self.score) / 100.0
