@@ -58,7 +58,7 @@ class RobotronEnv(gym.Env):
 
         # Gym Requirements
         self.action_mod = 1 if always_move else 0
-        self.actions = 8 + self.action_mod
+        self.actions = 8 if always_move else 9
         self.action_space = gym.spaces.Discrete(self.actions * self.actions)
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
