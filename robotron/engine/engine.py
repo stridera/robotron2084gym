@@ -23,15 +23,17 @@ class Engine:
 
     def __init__(self,
                  start_level: int = 1,
+                 lives: int = 3,
                  fps: int = 0,
                  godmode: bool = False,
                  headless: bool = False):
         self.godmode = godmode
         self.start_level = start_level - 1
         self.level = self.start_level
+        self.start_lives = lives
+        self.lives = lives
         self.fps = fps
 
-        self.lives = 3
         self.score = 0
         self.extra_lives = 0
         self.done = False
@@ -331,7 +333,7 @@ class Engine:
         self.frame = 0
         self.level = self.start_level
         self.score = 0
-        self.lives = 3
+        self.lives = self.start_lives
         self.extra_lives = 0
         self.done = False
 

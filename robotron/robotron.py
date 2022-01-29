@@ -33,23 +33,23 @@ class RobotronEnv(gym.Env):
 
     FAMILY_REWARD = 10.0
 
-    def __init__(self, level: int = 1, fps: int = 30, godmode: bool = False, always_move: bool = False, headless: bool = True):
+    def __init__(self, level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False, always_move: bool = False, headless: bool = True):
         """
         Setup the environment
 
         args:
             level (int): What level to start at.  Default: 1
             fps (int): Frames per secont to run at.  Default: 30
-            return_en
             godmode (bool): Are you a god? (Can't die.) Default: False
             always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
             headless (bool): Skip creating the screen.
         """
-        self.engine = Engine(level, fps, godmode, headless)
+        self.engine = Engine(level, lives, fps, godmode, headless)
         self.action_mod = 1 if always_move else 0
-        self.score = 0
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
+
+        self.score = 0
 
         # Gym Requirements
         actions = 8 if always_move else 9
@@ -101,6 +101,9 @@ class RobotronEnv(gym.Env):
 
         reward = (self.engine.score - self.score) / 100.0
         self.score = self.engine.score
+
+        if dead:
+            reward = -1.0
 
         return self.get_state(image), reward, dead, {
             'score': score,
