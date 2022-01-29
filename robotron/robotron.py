@@ -33,7 +33,13 @@ class RobotronEnv(gym.Env):
 
     FAMILY_REWARD = 10.0
 
-    def __init__(self, level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False, always_move: bool = False, headless: bool = True):
+    def __init__(self,
+                 level: int = 1,
+                 lives: int = 3,
+                 fps: int = 30,
+                 godmode: bool = False,
+                 always_move: bool = False,
+                 headless: bool = True):
         """
         Setup the environment
 
@@ -45,15 +51,15 @@ class RobotronEnv(gym.Env):
             headless (bool): Skip creating the screen.
         """
         self.engine = Engine(level, lives, fps, godmode, headless)
-        self.action_mod = 1 if always_move else 0
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
 
         self.score = 0
 
         # Gym Requirements
-        actions = 8 if always_move else 9
-        self.action_space = gym.spaces.MultiDiscrete([actions, actions])
+        self.action_mod = 1 if always_move else 0
+        self.actions = 8 + self.action_mod
+        self.action_space = gym.spaces.Discrete(self.actions * self.actions)
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
 
@@ -67,14 +73,14 @@ class RobotronEnv(gym.Env):
         self.score = 0
         return self.get_state(self.engine.reset())
 
-    def step(self,  action: Tuple[int, int]) -> Tuple[np.ndarray, int, bool, dict]:
+    def step(self,  action: int) -> Tuple[np.ndarray, int, bool, dict]:
         r"""
         Play one frame of the game.  We return the obs, reward, done, and
         any additional info.  Follows the openai gym observations structure.
         https://gym.openai.com/docs/#observations
 
         args:
-            action (Tuple[int, int]): The inputs to the game. This consists of two ints between 0-8
+            action (int): The inputs to the game. This consists of two ints between 0-8
             following the cardinal points of the joystick.
 
                 8   1   2
@@ -85,16 +91,24 @@ class RobotronEnv(gym.Env):
 
             If we have always_move set to True, we drop the Noop action. (Basically add 1 to each action)
 
+            Final equation should be: 
+            ```python
+            actions = 8 if always_move else 9
+            action = left * actions + right
+            ```
+
         returns:
             (np.ndarray, float, bool, dict): the obs, reward, done, and info
 
         raises:
             ValueError: Raised if input is invalid.
         """
-        move, shoot = action
 
-        if not 0 <= move <= 9 - self.action_mod or not 0 <= shoot <= 9 - self.action_mod:
-            raise ValueError("Invalid Action")
+        if not 0 <= action <= self.action_space.n:
+            raise ValueError(f'Action {action} is invalid.')
+
+        move = action // self.actions
+        shoot = action % self.actions
 
         self.engine.handle_input(move + self.action_mod, shoot + self.action_mod)
         (image, score, lives, level, dead) = self.engine.update()
@@ -103,7 +117,7 @@ class RobotronEnv(gym.Env):
         self.score = self.engine.score
 
         if dead:
-            reward = -1.0
+            reward = -1
 
         return self.get_state(image), reward, dead, {
             'score': score,
