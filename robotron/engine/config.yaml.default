@@ -98,7 +98,7 @@ tankshell:
 family:
     speed: 4
     move_delay: 5
-    score: [100, 100, 100, 100, 100]
+    score: [1000, 2000, 3000, 4000, 5000]
 prog:
     score: 100
     speed: 4
