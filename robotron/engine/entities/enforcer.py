@@ -31,8 +31,11 @@ class EnforcerBullet(Base):
             player_rect = engine.player.rect
             x_trajectory = random.randint(player_rect.left - 10, player_rect.right + 10)
             y_trajectory = random.randint(player_rect.top - 10, player_rect.bottom + 10)
-            self.vector = (pygame.Vector2(x_trajectory, y_trajectory) -
-                           pygame.Vector2(self.rect.center)).normalize() * speed
+            new_vector = pygame.Vector2(x_trajectory, y_trajectory) - pygame.Vector2(self.rect.center)
+            if new_vector.length() == 0:
+                # Unlikely to happen, but if it does, try new random values.
+                return self.get_trajectory()
+            self.vector = new_vector.normalize() * speed
             self.random_vector = pygame.Vector2(random.random(), random.random())
         else:
             self.random_vector *= 1.01
