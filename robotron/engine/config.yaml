@@ -1,3 +1,4 @@
+# Scores chosen for RL
 screen_size: [1280, 720]
 play_area: [116, 309, 608, 974]
 resource_path: "resources/"
@@ -44,63 +45,63 @@ waves:
     - [80, 0, 6, 0, 5, 1, 3, 3, 3]
     - [30, 15, 2, 25, 1, 1, 10, 10, 10]  # 40
 
-extra_life_score: 25000
+extra_life_score: -1
 
 grunt:
     score: 100
     speed: 7
     move_delay: [5, 25]
 electrode:
-    score: 0
+    score: 25
 hulk:
     score: 0
-brain:
+brain: # Brains fly around, shoot cruise missiles, and convert humans to progs.
     score: 500
     speed: 1
     use_mikey_bug: True
     programming_time: 60
     programming_offset: 5
     shoot_delays: [80, 620]
-cruisemissile:
-    score: 25
+cruisemissile: # Shot by brains
+    score: 200
     speed: 3
     time_to_live: 200
-sphereoid:
+sphereoid: # Circles that spawn enforcers.  Flies in long wavey patterns.
     score: 1000
     speed: 5
     move_delays: [10, 32]
+    move_curvatures: [-50, 50]
     spawn_delays: [20, 64]
     spawn_counts: [1, 5]
-    move_curvatures: [-50, 50]
-enforcer:
-    score: 150
+enforcer: # Spawned by sphereoids, shoots crosses
+    score: 350
     max_speed: 20
     shoot_delays: [15, 50]
-enforcerbullet:
-    score: 0
+enforcerbullet: # Little x's shot by the enforcers
+    score: 200
     max_speed: 30
     time_to_live: 50
-quark:
+quark: # Sparky bois that spawn tanks
     score: 1000
     speed: 0.5
     move_delays: [5, 30]
     spawn_delays: [8, 120]
     spawn_counts: [1, 5]
-tank:
-    score: 200
+tank: # Big bois that shoot shells
+    score: 350
     bullets: 20
     shoot_delays: [35, 330]
-tankshell:
-    score: 50
+tankshell: # Circles that bounce off the walls
+    score: 200
     min_speed: 10
     max_speed: 20
     time_to_live: 80
-family:
+family: # Humans, to be saved?
     speed: 4
     move_delay: 5
     score: [100, 100, 100, 100, 100]
-prog:
-    score: 100
+prog: # Brainwashed humans
+    score: 200
     speed: 4
     move_delay: 5
     programming_time: 60

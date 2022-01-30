@@ -68,6 +68,7 @@ class Engine:
         self.to_kill_group_types = ['Grunt', 'Sphereoid', 'Enforcer', 'Brain', 'Quark', 'Tank']
         self.enemies = ['grunt', 'electrode', ]
 
+        self.extra_life_score = self.config.get('extra_life_score')
         self.player = None
         self.player_box = None
         self.family_collected = 0
@@ -264,9 +265,10 @@ class Engine:
         self.frame += 1
 
         # You start the game with 3 men and receive and additional man for every 25,000 points you get.
-        if self.score // 25000 > self.extra_lives:
-            self.lives += 1
-            self.extra_lives += 1
+        if self.extra_life_score > 0:
+            if self.score // self.extra_life_score > self.extra_lives:
+                self.lives += 1
+                self.extra_lives += 1
 
         if not self.done:
             self.all_group.update()
