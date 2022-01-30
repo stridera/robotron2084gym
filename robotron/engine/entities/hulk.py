@@ -78,10 +78,16 @@ class Hulk(Base):
         if random.randrange(1, 100) < self.turn_percentage:
             self.turn()
 
+        i = 0
         while not self.valid_move(self.direction):
             self.turn()
+            i += 1
+            if i > 100:
+                print("Hulk stuck in a loop", self.rect.center)
+                self.reset()
 
         self.rect.center += self.get_vector(self.direction)
+        self.rect.clamp_ip(self.play_rect)
         self.animation_direction = self.get_direction_string(self.direction)
         self.update_animation()
 
