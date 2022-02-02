@@ -25,6 +25,7 @@ class Engine:
                  start_level: int = 1,
                  lives: int = 3,
                  fps: int = 0,
+                 config_path: str = None,
                  godmode: bool = False,
                  headless: bool = False):
         self.godmode = godmode
@@ -39,7 +40,7 @@ class Engine:
         self.done = False
         self.frame = 0
 
-        self.config = Config()
+        self.config = Config(config_path)
 
         pygame.init()
         pygame.display.set_caption('Robotron 2084')

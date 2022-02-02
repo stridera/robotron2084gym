@@ -36,6 +36,7 @@ class RobotronEnv(gym.Env):
                  level: int = 1,
                  lives: int = 3,
                  fps: int = 30,
+                 config_path: str = None,
                  godmode: bool = False,
                  always_move: bool = False,
                  headless: bool = True):
@@ -49,7 +50,7 @@ class RobotronEnv(gym.Env):
             always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
             headless (bool): Skip creating the screen.
         """
-        self.engine = Engine(level, lives, fps, godmode, headless)
+        self.engine = Engine(level, lives, fps, config_path, godmode, headless)
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
 
@@ -128,16 +129,12 @@ class RobotronEnv(gym.Env):
 
     def get_state(self, image):
         """
-        Convert the image into a 84 by 84 pixel image in a format for deep learning agents to easily consume.
+        Return only the play area of the image.
 
         returns:
             np.ndarray: The game image for the current step
         """
         image = crop(image, self.engine.play_area)
-        # cv2.imshow('image', image)
-        # cv2.waitKey(0)
-        # image = cv2.resize(image, (84, 84), interpolation=cv2.INTER_LINEAR)
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         return image
 
     def render(self, mode):

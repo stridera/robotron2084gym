@@ -6,9 +6,11 @@ import yaml
 class Config:
     """ Load and manage the configuration file. """
 
-    def __init__(self):
-        dirname = path.dirname(__file__)
-        with open(path.join(dirname, 'config.yaml'), 'r') as f:
+    def __init__(self, config_path: str = None):
+        if config_path is None:
+            config_path = path.join(path.dirname(__file__), "config.yaml")
+
+        with open(config_path, 'r') as f:
             self.config = yaml.load(f, Loader=yaml.FullLoader)
 
     def get(self, key):
