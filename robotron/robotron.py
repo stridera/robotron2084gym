@@ -35,7 +35,7 @@ class RobotronEnv(gym.Env):
     def __init__(self,
                  level: int = 1,
                  lives: int = 3,
-                 fps: int = 30,
+                 fps: int = 0,
                  config_path: str = None,
                  godmode: bool = False,
                  always_move: bool = False,
