@@ -63,6 +63,16 @@ class RobotronEnv(gym.Env):
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
 
+    def get_board_size(self):
+        """
+        Get the size of the board
+
+        returns:
+            (int, int): The width and height of the board
+        """
+
+        return self.engine.play_rect.size
+
     def reset(self):
         """
         Reset the game and get an initial observation
@@ -124,7 +134,7 @@ class RobotronEnv(gym.Env):
             'level': level,
             'lives': lives,
             'family': self.engine.family_remaining(),
-            'data': self.engine.get_enemy_data(),
+            'data': self.engine.get_sprite_data(),
         }
 
     def get_state(self, image):
@@ -137,8 +147,8 @@ class RobotronEnv(gym.Env):
         image = crop(image, self.engine.play_area)
         return image
 
-    def render(self, mode):
-        """ TODO:  Render the game on the screen while playing. """
+    def render(self, mode='human'):
+        """ TODO:  Render the game on the screen while playing.  Currently automatically does this via pygame. """
         image = self.engine.get_image()
         if mode == 'human':
             return image

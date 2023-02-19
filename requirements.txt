@@ -1,6 +1,6 @@
-cloudpickle==2.0.0
-gym==0.21.0
-numpy==1.22.1
-opencv-python==4.5.5.62
-pygame==2.1.2
+cloudpickle==2.2.1
+gym==0.26.2
+gym-notices==0.0.8
+numpy==1.24.2
+pygame==2.1.3
 PyYAML==6.0

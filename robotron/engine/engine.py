@@ -309,7 +309,7 @@ class Engine:
         """
         return len(self.family_group)
 
-    def get_enemy_data(self) -> List[Tuple[int, int, str]]:
+    def get_sprite_data(self) -> List[Tuple[int, int, str]]:
         """
         Get the data for all meaningful sprites.  Includes players, bullets, and enemies.
         We skip floaters since those are just trails or points and can't be interacted with.
