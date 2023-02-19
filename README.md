@@ -13,7 +13,7 @@ Working on simulating the XBox look and feel in an attempt to train a model and 
 Insure you have python3 installed and venv. In ubuntu:
 
 ```bash
-sudo apt install python3.9 python3.9-venv
+sudo apt install python3.11 python3.11-venv
 ```
 
 Clone, setup venv, install requirements:
