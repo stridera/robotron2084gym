@@ -21,7 +21,7 @@ Clone, setup venv, install requirements:
 ```bash
 git clone git@github.com:stridera/robotron-2084.git
 cd robotron-2084/
-python3.8 -mvenv .venv
+python3.11 -mvenv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
