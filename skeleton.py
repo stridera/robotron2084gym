@@ -28,8 +28,8 @@ import argparse
 from robotron import RobotronEnv
 
 
-def main(starting_level: int = 1, fps: int = 30, godmode: bool = False):
-    env = RobotronEnv(starting_level, fps, godmode, headless=False)
+def main(starting_level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False):
+    env = RobotronEnv(starting_level, lives, fps, godmode: godmode)
     board_size = env.get_board_size()
     print(f"Board Size: {board_size}")  # Default Board Size: (665, 492)
     env.reset()
@@ -51,6 +51,7 @@ def main(starting_level: int = 1, fps: int = 30, godmode: bool = False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Rainbow')
     parser.add_argument('--level', type=int, default=1, help='Start Level')
+    parser.add_argument('--lives', type=int, default=3, help='Start Lives')
     parser.add_argument('--fps', type=int, default=30, help='FPS')
     parser.add_argument('--godmode', action='store_true', help='Enable GOD Mode (Can\'t die.)')
 
