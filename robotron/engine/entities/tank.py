@@ -123,6 +123,7 @@ class Tank(Base):
                 self.shoot_delay = randint(*self.shoot_delays)
                 bullet = TankShell(self.engine, center=self.rect.center)
                 self.engine._add_sprite(bullet)
+                self.engine._add_enemy(bullet)
 
     def reset(self):
         """Reset the sprite after the player dies."""
