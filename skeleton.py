@@ -29,7 +29,7 @@ from robotron import RobotronEnv
 
 
 def main(starting_level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False):
-    env = RobotronEnv(starting_level, lives, fps, godmode: godmode)
+    env = RobotronEnv(starting_level, lives, fps, godmode=godmode)
     board_size = env.get_board_size()
     print(f"Board Size: {board_size}")  # Default Board Size: (665, 492)
     env.reset()
