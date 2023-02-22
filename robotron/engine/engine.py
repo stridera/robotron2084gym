@@ -344,7 +344,7 @@ class Engine:
 
         return self.get_image()
 
-    @staticmethod
+    @ staticmethod
     def get_image() -> List:
         """
         Return the latest image.

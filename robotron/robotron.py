@@ -50,7 +50,8 @@ class RobotronEnv(gym.Env):
             always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
             headless (bool): Skip creating the screen.
         """
-        self.engine = Engine(level, lives, fps, config_path, godmode, headless)
+        self.engine = Engine(start_level=level, lives=lives, fps=fps, config_path=config_path,
+                             godmode=godmode, headless=headless)
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
 

@@ -170,7 +170,7 @@ class Input():
         )
 
 
-def main(level: int = 1, fps: int = 30, godmode: bool = False):
+def main(level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False):
     """
     Run the robotron environment for a human to play.add()
 
@@ -179,7 +179,8 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
         fps (int): The fps to run the engine at (passed to pygame)
         godmode (bool): Enable godmode (no deaths)
     """
-    env = RobotronEnv(level, fps, godmode, headless=False)
+    print("FPS: ", fps)
+    env = RobotronEnv(level=level, lives=lives, fps=fps, godmode=godmode, headless=False)
     user_input = Input()
 
     env.reset()
@@ -205,8 +206,9 @@ def main(level: int = 1, fps: int = 30, godmode: bool = False):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Rainbow')
     parser.add_argument('--level', type=int, default=1, help='Start Level')
+    parser.add_argument('--lives', type=int, default=3, help='Lives')
     parser.add_argument('--fps', type=int, default=30, help='FPS')
     parser.add_argument('--godmode', action='store_true', help='Enable GOD Mode (Can\'t die.)')
 
     args = parser.parse_args()
-    main(args.level, args.fps, args.godmode)
+    main(args.level, args.lives, args.fps, args.godmode)
