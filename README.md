@@ -32,6 +32,13 @@ Run the game:
 python main.py
 ```
 
+## Configs
+
+Everything is configurable. You can either modify `robotron/engine/config.yaml` directly or copy it and provide it to the engine via the `config_path` argument. You can use this to change the number of enemies per level, how fast enemies move, or how many bullets/enemies they spawn.
+
+The current one is optimized for machine learning and has some changes from live. (Like, we don't gain extra lives.)
+The `config.yaml.defult` file is as close to the real game as I could make it.
+
 ## OpenAI Gym
 
 This was designed to have a similar structure to OpenAI Gym games. It supports the `reset()` and `step()` functions. You can look at [main.py](main.py) and see how it can be used.
@@ -100,7 +107,7 @@ _image, reward, done, info_
   - level: Current level
   - lives: Lives remaining
   - family: Family remaining
-  - data: List of Tuples containing each sprites X, Y, and name.  Related to the play area so 0,0 to obs space.
+  - data: List of Tuples containing each sprites X, Y, and name. Related to the play area so 0,0 to obs space.
 
 **Example**
 
