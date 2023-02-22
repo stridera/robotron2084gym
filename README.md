@@ -37,7 +37,7 @@ python main.py
 Everything is configurable. You can either modify `robotron/engine/config.yaml` directly or copy it and provide it to the engine via the `config_path` argument. You can use this to change the number of enemies per level, how fast enemies move, or how many bullets/enemies they spawn.
 
 The current one is optimized for machine learning and has some changes from live. (Like, we don't gain extra lives.)
-The `config.yaml.defult` file is as close to the real game as I could make it.
+The `config.yaml.default` file is as close to the real game as I could make it. Feel free to copy it over to get back those functions.
 
 ## OpenAI Gym
 
