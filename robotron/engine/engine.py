@@ -342,7 +342,13 @@ class Engine:
 
         self._initialize_level()
 
-        return self.get_image()
+        return self.get_image(), {
+            'score': self.score,
+            'level': self.level,
+            'lives': self.lives,
+            'family': self.family_remaining(),
+            'data': self.get_sprite_data(),
+        }
 
     @ staticmethod
     def get_image() -> List:
