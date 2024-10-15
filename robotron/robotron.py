@@ -41,6 +41,7 @@ class RobotronEnv(gym.Env):
                  config_path: str = None,
                  godmode: bool = False,
                  always_move: bool = False,
+                 render_mode: Optional[str] = None,
                  headless: bool = True):
         """
         Setup the environment
@@ -66,6 +67,9 @@ class RobotronEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(self.actions * self.actions)
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
+
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = 'rgb_array' if render_mode is None else render_mode
 
     def get_board_size(self):
         """
@@ -135,7 +139,7 @@ class RobotronEnv(gym.Env):
         if dead:
             reward = -1
 
-        truncated = False # We don't have a time limit.  You play until you die.
+        truncated = False  # We don't have a time limit.  You play until you die.
 
         return self.get_state(image), reward, dead, truncated, {
             'score': score,
@@ -145,7 +149,7 @@ class RobotronEnv(gym.Env):
             'data': self.engine.get_sprite_data(),
         }
 
-    def get_state(self, image):
+    def get_state(self, image) -> np.ndarray:
         """
         Return only the play area of the image.
 
