@@ -19,7 +19,8 @@ Example:
 """
 from typing import Tuple
 import numpy as np
-import gym
+import gymnasium as gym
+from typing import Optional
 
 from .engine import Engine
 from .utils import crop
@@ -33,12 +34,14 @@ class RobotronEnv(gym.Env):
     FAMILY_REWARD = 10.0
 
     def __init__(self,
+                 seed: Optional[int] = None,
                  level: int = 1,
                  lives: int = 3,
                  fps: int = 0,
                  config_path: str = None,
                  godmode: bool = False,
                  always_move: bool = False,
+                 render_mode: Optional[str] = None,
                  headless: bool = True):
         """
         Setup the environment
@@ -50,6 +53,7 @@ class RobotronEnv(gym.Env):
             always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
             headless (bool): Skip creating the screen.
         """
+        # TODO: Add game random number generator and use the seed
         self.engine = Engine(start_level=level, lives=lives, fps=fps, config_path=config_path,
                              godmode=godmode, headless=headless)
         width, height = self.engine.play_rect.size
@@ -64,6 +68,9 @@ class RobotronEnv(gym.Env):
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
         self.metadata = {'render.modes': ['human', 'rgb_array']}
 
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = 'rgb_array' if render_mode is None else render_mode
+
     def get_board_size(self):
         """
         Get the size of the board
@@ -74,15 +81,17 @@ class RobotronEnv(gym.Env):
 
         return self.engine.play_rect.size
 
-    def reset(self):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> np.ndarray:
         """
         Reset the game and get an initial observation
 
         returns:
             np.ndarray: The initial obs
         """
+        super().reset(seed=seed)
         self.score = 0
-        return self.get_state(self.engine.reset())
+        obs, info = self.engine.reset()
+        return self.get_state(obs), info
 
     def step(self,  action: int) -> Tuple[np.ndarray, int, bool, dict]:
         r"""
@@ -130,7 +139,9 @@ class RobotronEnv(gym.Env):
         if dead:
             reward = -1
 
-        return self.get_state(image), reward, dead, {
+        truncated = False  # We don't have a time limit.  You play until you die.
+
+        return self.get_state(image), reward, dead, truncated, {
             'score': score,
             'level': level,
             'lives': lives,
@@ -138,7 +149,7 @@ class RobotronEnv(gym.Env):
             'data': self.engine.get_sprite_data(),
         }
 
-    def get_state(self, image):
+    def get_state(self, image) -> np.ndarray:
         """
         Return only the play area of the image.
 
