@@ -34,7 +34,6 @@ class RobotronEnv(gym.Env):
     FAMILY_REWARD = 10.0
 
     def __init__(self,
-                 seed: Optional[int] = None,
                  level: int = 1,
                  lives: int = 3,
                  fps: int = 0,
@@ -42,7 +41,8 @@ class RobotronEnv(gym.Env):
                  godmode: bool = False,
                  always_move: bool = False,
                  render_mode: Optional[str] = None,
-                 headless: bool = True):
+                 headless: bool = True,
+                 seed: Optional[int] = None):
         """
         Setup the environment
 
