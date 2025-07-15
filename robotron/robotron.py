@@ -48,14 +48,14 @@ class RobotronEnv(gym.Env):
 
         args:
             level (int): What level to start at.  Default: 1
-            fps (int): Frames per secont to run at.  Default: 30
+            fps (int): Frames per second to run at.  Default: 30
             godmode (bool): Are you a god? (Can't die.) Default: False
             always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
             headless (bool): Skip creating the screen.
         """
         # TODO: Add game random number generator and use the seed
         self.engine = Engine(start_level=level, lives=lives, fps=fps, config_path=config_path,
-                             godmode=godmode, headless=headless)
+                             godmode=godmode, headless=headless, seed=seed)
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
 

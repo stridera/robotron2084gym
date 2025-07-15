@@ -27,7 +27,8 @@ class Engine:
                  fps: int = 0,
                  config_path: str = None,
                  godmode: bool = False,
-                 headless: bool = False):
+                 headless: bool = False,
+                 seed: int = None):
         self.godmode = godmode
         self.start_level = start_level - 1
         self.level = self.start_level
