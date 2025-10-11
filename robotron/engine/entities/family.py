@@ -31,7 +31,7 @@ class Family(Base):
 
     def reset(self):
         """ Reset the sprite. """
-        self.move_direction = random.randrange(1, 8)
+        self.move_direction = self.random_int(1, 9)
         self.update_animation()
         self.random_location()
 
@@ -68,7 +68,7 @@ class Family(Base):
                     direction = 0
                     break
 
-                direction = random.choice(valid_directions)
+                direction = self.random_choice(valid_directions)
 
             self.vector = self.get_vector(direction)
             self.rect.center += self.vector

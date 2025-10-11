@@ -70,9 +70,9 @@ class Prog(Family):
             x = 1 if prect.x > self.rect.x else -1
             y = 1 if prect.y > self.rect.y else -1
             # Needs to be tweeked.  Mostly move toward the player.
-            if random.random() < 0.25:
+            if self.random_float() < 0.25:
                 x = -x
-            if random.random() < 0.25:
+            if self.random_float() < 0.25:
                 y = -y
             self.vector = pygame.Vector2(x, y)
         self.engine._add_sprite(Floater(self.engine, center=self.rect.center, sprite=self.image, delay=5))
@@ -98,7 +98,7 @@ class Prog(Family):
         if self.programming_time > 0:
             if self.engine.frame % 2 == 0:
                 self.rect.y -= self.offset
-                self.offset = random.randint(0, self.rect.height) - (self.rect.height // 2)
+                self.offset = self.random_int(0, self.rect.height + 1) - (self.rect.height // 2)
                 self.rect.y += self.offset
             self.programming_time -= 1
         else:

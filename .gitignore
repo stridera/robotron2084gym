@@ -1,17 +1,76 @@
+# Python
 **/.ipynb_checkpoints
 *.pyc
 **/__pycache__
-
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Poetry (commit poetry.lock for reproducibility)
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
 .ipynb_checkpoints
 
-# IDE/ENV
-.vscode/
-.venv/
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
 
-# RL Artifacts
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Jupyter
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# OS
+Thumbs.db
+
+# RL Artifacts (for researchers using this env)
 wandb/
 runs/
 models/
+checkpoints/
+logs/
+
+# Project specific
+*.log

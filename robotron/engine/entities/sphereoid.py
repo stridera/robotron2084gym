@@ -40,9 +40,11 @@ class Sphereoid(Generator):
 
     def update_curvature_and_countdowns(self):
         """ Generate new values to move along. """
-        self.move_curvature.x = random.randint(*self.move_curvatures) / 1000
-        self.move_curvature.y = random.randint(*self.move_curvatures) / 1000
-        self.move_delay = random.randrange(*self.move_delays)
+        curvature_x = self.random_int(self.move_curvatures[0], self.move_curvatures[1] + 1)
+        curvature_y = self.random_int(self.move_curvatures[0], self.move_curvatures[1] + 1)
+        self.move_curvature.x = curvature_x / 1000
+        self.move_curvature.y = curvature_y / 1000
+        self.move_delay = self.random_int(self.move_delays[0], self.move_delays[1])
 
     def move(self):
         """ Sphereoids """

@@ -8,29 +8,74 @@ Working on simulating the XBox look and feel in an attempt to train a model and 
 
 (See [my robotron player](https://github.com/stridera/robotron))
 
-## Install
+**Quick Links:**
+- 📖 [Quick Start Guide](QUICKSTART.md) - Get running in 60 seconds
+- 💻 [Examples](examples/) - Practical code samples
+- 🏗️ [Architecture](CLAUDE.md) - Developer documentation
+- 🤝 [Contributing](CONTRIBUTING.md) - Development guide
 
-Insure you have python3 installed and venv. In ubuntu:
+## Features
+
+✅ **Gymnasium-compliant** - Works with modern RL frameworks
+✅ **Fully deterministic** - Seeded reproducibility for experiments
+✅ **Performance optimized** - Headless mode with off-screen rendering
+✅ **Visual observations** - Full RGB observations even in headless mode
+✅ **Type-safe** - Comprehensive type hints throughout
+✅ **Well-tested** - Examples and test coverage
+✅ **Configurable** - YAML-based game parameters
+
+## Installation
+
+### Option 1: Poetry (Recommended)
+
+[Poetry](https://python-poetry.org/) provides better dependency management and virtual environment handling:
 
 ```bash
-sudo apt install python3.11 python3.11-venv
-```
+# Install Poetry (if not already installed)
+curl -sSL https://install.python-poetry.org | python3 -
 
-Clone, setup venv, install requirements:
-
-```bash
+# Clone repository
 git clone git@github.com:stridera/robotron-2084.git
 cd robotron-2084/
-python3.11 -mvenv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
 
-Run the game:
+# Install dependencies (creates virtual environment automatically)
+poetry install
 
-```bash
+# Run the game
+poetry run python main.py
+
+# Or activate the virtual environment
+poetry shell
 python main.py
 ```
+
+### Option 2: pip
+
+Traditional installation using pip:
+
+```bash
+# Install Python 3.10+ (Ubuntu example)
+sudo apt install python3.10 python3.10-venv
+
+# Clone repository
+git clone git@github.com:stridera/robotron-2084.git
+cd robotron-2084/
+
+# Create and activate virtual environment
+python3.10 -m venv .venv
+source .venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+
+# Run the game
+python main.py
+```
+
+### Requirements
+
+- **Python:** 3.10, 3.11, or 3.12
+- **OS:** Linux, macOS, or Windows (with WSL recommended)
 
 ## Configs
 
@@ -39,86 +84,199 @@ Everything is configurable. You can either modify `robotron/engine/config.yaml` 
 The current one is optimized for machine learning and has some changes from live. (Like, we don't gain extra lives.)
 The `config.yaml.default` file is as close to the real game as I could make it. Feel free to copy it over to get back those functions.
 
-## OpenAI Gym
+## Gymnasium Environment
 
-This was designed to have a similar structure to OpenAI Gym games. It supports the `reset()` and `step()` functions. You can look at [main.py](main.py) and see how it can be used.
+This environment follows the [Gymnasium](https://gymnasium.farama.org/) API (the maintained successor to OpenAI Gym). It's fully compatible with modern RL frameworks.
 
-### Functions
-
-#### Initialization
-
-Import the module and create the new env.
-
-Example:
+### Quick Start
 
 ```python
-import robotron
+from robotron import RobotronEnv
 
-level = 1
-fps = 30
-env = robotron.Robotron(level, fps)
+# Create environment for RL training
+env = RobotronEnv(
+    level=1,              # Starting level
+    lives=3,              # Number of lives
+    fps=0,                # 0 = max speed for training
+    headless=True,        # No display (faster training)
+    always_move=True,     # Reduced action space (64 vs 81)
+    render_mode=None,     # 'human' or 'rgb_array'
+)
+
+# Standard Gymnasium API
+obs, info = env.reset(seed=42)  # Seeded for reproducibility
+terminated = False
+
+while not terminated:
+    action = env.action_space.sample()  # Your agent here
+    obs, reward, terminated, truncated, info = env.step(action)
+
+env.close()
 ```
 
-**Optional Parameters:**
+### Environment Parameters
 
-_level_ - Default: 1
-Specifies the level to start at. Useful for training a level the agent has a particularly hard time at.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `level` | int | 1 | Starting level (1-40) |
+| `lives` | int | 3 | Number of lives |
+| `fps` | int | 0 | Frames per second (0 = unlimited, best for training) |
+| `headless` | bool | True | Off-screen rendering (no display window, still returns observations) |
+| `always_move` | bool | False | Reduce action space from 81 to 64 (no-op removed) |
+| `godmode` | bool | False | Invincibility (for debugging) |
+| `config_path` | str | None | Path to custom config YAML |
+| `render_mode` | str | None | 'human' or 'rgb_array' |
+| `seed` | int | None | Random seed (pass to `reset()` instead) |
 
-_fps_ - Default: 0
-Can be used to slow the game down for human players. 0 makes it play as quick as possible and should be used for computer agents.
+### Action Space
 
-**Returns**
-Returns an image of the play area.
+**Default (Discrete 81):**
+- Combines movement (9 directions) and shooting (9 directions)
+- Action encoding: `action = movement * 9 + shooting`
+- Directions: 0=None, 1=Up, 2=UpRight, 3=Right, 4=DownRight, 5=Down, 6=DownLeft, 7=Left, 8=UpLeft
 
-#### `reset()`
+**With `always_move=True` (Discrete 64):**
+- Removes no-movement option for reduced action space
+- Action encoding: `action = movement * 8 + shooting` (movements and shooting are 0-7)
 
-Resets the environment. Sets the level back to level 1, resets score and lives. Returns an image of the newly reset stage.
+### Observation Space
 
-**Example**
+- **Type:** `Box(0, 255, (height, width, 3), uint8)`
+- **Shape:** RGB image of play area (default: 492×665×3)
+- **Values:** Cropped view of the game arena
+
+### Rewards
+
+- **Score delta:** `(new_score - old_score) / 100.0`
+- **Death penalty:** `-1.0`
+- **Family bonus:** Progressive (1k, 2k, 3k, 4k, 5k max per level)
+
+### Info Dictionary
+
+Returns detailed state information:
 
 ```python
-image = env.reset()
+{
+    'score': int,        # Current score
+    'level': int,        # Current level (0-indexed)
+    'lives': int,        # Lives remaining
+    'family': int,       # Family members remaining
+    'data': List[Tuple]  # [(x, y, sprite_name), ...] for all sprites
+}
 ```
 
-#### `step()`
+### API Methods
 
-Play one action on the env.
+#### `reset(seed=None, options=None)`
 
-**Parameters:**
+Resets the environment to initial state.
 
-_action_ - int between 0 and 81 (9 \* 9)
-This should be a integer that combines the two stick controls. You can either have a single agent that outputs 91, or you can have one agent for movement and one for shooting and construct it by doing the following:
-
-```python
-action = left * 9 + right
-```
-
-**Note**: You may wish to restrict this to 8\*8 and have your guy always moving and always shooting. There is usually no reason to ever stop and the limited action space may help your model.
+**Arguments:**
+- `seed` (int, optional): Random seed for reproducibility
+- `options` (dict, optional): Additional reset options
 
 **Returns:**
+- `observation` (ndarray): Initial game state image
+- `info` (dict): Initial state information
 
-_image, reward, done, info_
-
-- _Image_: Returns the current cropped out play area.
-- _reward_: The current score. Probably want to change this to make it return a better reward.
-- _done_: All lives are exhausted. Game Over.
-- _info_: Returns a list of extra state data:
-  - score: Current score
-  - level: Current level
-  - lives: Lives remaining
-  - family: Family remaining
-  - data: List of Tuples containing each sprites X, Y, and name. Related to the play area so 0,0 to obs space.
-
-**Example**
-
+**Example:**
 ```python
-image, reward, done, info = env.step(action)
+obs, info = env.reset(seed=42)  # Reproducible reset
 ```
 
-## Notes
+#### `step(action)`
 
-- There are no effect yet. You probably want to turn it to grayscale anyway, so it won't matter, but this is a post processing step you should do before sending it to your agent.
-- Reward is currently just the score. I'll probably change this later to make it better score related and return score in the info.
+Execute one game step with the given action.
+
+**Arguments:**
+- `action` (int): Action in range [0, action_space.n)
+
+**Returns:**
+- `observation` (ndarray): Game state image
+- `reward` (float): Reward for this step
+- `terminated` (bool): True if game over (all lives lost)
+- `truncated` (bool): Always False (no time limit)
+- `info` (dict): State information
+
+**Example:**
+```python
+obs, reward, terminated, truncated, info = env.step(action)
+```
+
+#### `render()`
+
+Render the environment (if `render_mode` is set).
+
+**Returns:**
+- `ndarray` if `render_mode='rgb_array'`
+- `None` if `render_mode='human'` (displays via pygame)
+
+#### `close()`
+
+Clean up environment resources.
+
+```python
+env.close()  # Important: call when done!
+```
+
+### Reproducibility & Seeding
+
+The environment supports full deterministic reproducibility:
+
+```python
+# Create two identical environments
+env1 = RobotronEnv(headless=True)
+env2 = RobotronEnv(headless=True)
+
+# Reset with same seed
+obs1, _ = env1.reset(seed=42)
+obs2, _ = env2.reset(seed=42)
+
+# Same actions produce identical results
+for _ in range(100):
+    action = env1.action_space.sample()
+    obs1, r1, d1, t1, info1 = env1.step(action)
+    obs2, r2, d2, t2, info2 = env2.step(action)
+    assert np.array_equal(obs1, obs2)  # Identical observations
+```
+
+### Performance Tips
+
+For maximum training speed:
+
+```python
+env = RobotronEnv(
+    fps=0,              # No frame rate limiting
+    headless=True,      # Off-screen rendering (no display window)
+    always_move=True,   # Smaller action space
+)
+```
+
+**Note:** Headless mode renders to an off-screen surface, so you still get full visual observations for training without the overhead of displaying to screen.
+
+### Advanced: Custom Configuration
+
+Create a custom `config.yaml` to modify game behavior:
+
+```python
+env = RobotronEnv(config_path='path/to/custom_config.yaml')
+```
+
+See `robotron/engine/config.yaml` for all available options.
+
+## Examples
+
+Check out the [`examples/`](examples/) directory for practical code samples:
+
+- **`basic_usage.py`** - Getting started with the environment
+- **`reproducibility_demo.py`** - Proving deterministic seeding works
+- **`performance_comparison.py`** - Benchmarking headless vs. rendered modes
+- **`custom_config.py`** - Creating custom game configurations
+
+Run any example:
+```bash
+python examples/basic_usage.py
+```
 
 ## Todo
 

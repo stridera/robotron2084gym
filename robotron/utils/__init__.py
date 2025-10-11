@@ -9,11 +9,11 @@ def crop(image: np.ndarray, dims: Tuple[int, int, int, int]) -> np.ndarray:
 
     Args:
         image (np.ndarray): The image we want to crop
-        coords (Tuple[int, int, int, int]): The left, top, right, and 
-            bottom crop coords
+        dims (Tuple[int, int, int, int]): The top, left, bottom, and
+            right crop coords (matching pygame Rect ordering)
 
     Returns:
         np.ndarray: The cropped image
     """
-    left, top, right, bottom = dims
-    return image[left:right, top:bottom]
+    top, left, bottom, right = dims
+    return image[top:bottom, left:right]

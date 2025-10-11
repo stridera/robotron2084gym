@@ -23,8 +23,9 @@ class Generator(Base):
     def reset(self):
         self.cycle = self.PRE_SPAWN_CYCLE_LIMIT
         self.spawn_delays = self.config('spawn_delays', self.SPAWN_DELAY)
-        self.spawn_delay = random.randrange(*self.spawn_delays)
-        self.spawn_count = random.randrange(*self.config('spawn_counts', self.MAX_SPAWN_COUNT))
+        self.spawn_delay = self.random_int(self.spawn_delays[0], self.spawn_delays[1])
+        spawn_counts = self.config('spawn_counts', self.MAX_SPAWN_COUNT)
+        self.spawn_count = self.random_int(spawn_counts[0], spawn_counts[1])
         self.alive = True
         self.move_curvature = pygame.Vector2(0)
         self.move_deltas = pygame.Vector2(0)
@@ -55,7 +56,7 @@ class Generator(Base):
     def spawn(self):
         """ Spawn the babies. """
         self.cycle = len(self.animations)
-        self.spawn_delay = random.randrange(*self.spawn_delays)
+        self.spawn_delay = self.random_int(self.spawn_delays[0], self.spawn_delays[1])
         self.spawn_count -= 1
 
         spawn = self.get_spawn()

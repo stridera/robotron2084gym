@@ -29,14 +29,14 @@ class EnforcerBullet(Base):
             distance_to_player = self.get_distance_to_player()
             speed = ((distance_to_player * self.max_speed) / self.max_distance) + 1
             player_rect = engine.player.rect
-            x_trajectory = random.randint(player_rect.left - 10, player_rect.right + 10)
-            y_trajectory = random.randint(player_rect.top - 10, player_rect.bottom + 10)
+            x_trajectory = self.random_int(player_rect.left - 10, player_rect.right + 11)
+            y_trajectory = self.random_int(player_rect.top - 10, player_rect.bottom + 11)
             new_vector = pygame.Vector2(x_trajectory, y_trajectory) - pygame.Vector2(self.rect.center)
             if new_vector.length() == 0:
                 # Unlikely to happen, but if it does, try new random values.
                 return self.get_trajectory()
             self.vector = new_vector.normalize() * speed
-            self.random_vector = pygame.Vector2(random.random(), random.random())
+            self.random_vector = pygame.Vector2(self.random_float(), self.random_float())
         else:
             self.random_vector *= 1.01
 
@@ -104,7 +104,7 @@ class Enforcer(Base):
         self.max_distance = self.engine._get_play_area_distance()
         self.offset_update = 0
         self.random_offset = 0
-        self.shoot_delay = random.randint(*self.shoot_delays)
+        self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
 
     def update(self):
         self.update_animation()
@@ -135,8 +135,8 @@ class Enforcer(Base):
         """
         if self.active:
             if self.offset_update <= 0:
-                self.random_offset = random.randint(-5, 1)
-                self.offset_update = random.randint(10, 30)
+                self.random_offset = self.random_int(-5, 2)
+                self.offset_update = self.random_int(10, 31)
 
             self.offset_update -= 1
 
@@ -154,7 +154,7 @@ class Enforcer(Base):
         """
         self.shoot_delay -= 1
         if self.shoot_delay <= 0:
-            self.shoot_delay = random.randint(*self.shoot_delays)
+            self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
             self.engine._add_enemy(EnforcerBullet(self.engine, center=self.rect.center))
 
     def reset(self):

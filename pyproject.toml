@@ -1,0 +1,143 @@
+[tool.poetry]
+name = "robotron2084gym"
+version = "1.0.0"
+description = "Robotron 2084 Gymnasium environment for reinforcement learning"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/stridera/robotron-2084"
+repository = "https://github.com/stridera/robotron-2084"
+keywords = ["reinforcement-learning", "gymnasium", "gym", "robotron", "game", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Games/Entertainment :: Arcade",
+]
+packages = [
+    { include = "robotron" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+gymnasium = "^1.0.0"
+numpy = "^1.26.0"
+pygame-ce = "^2.5.0"  # Community Edition - actively maintained fork
+pyyaml = "^6.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^6.0.0"
+black = "^24.0.0"
+ruff = "^0.7.0"
+mypy = "^1.11.0"
+types-pyyaml = "^6.0.12"
+
+[tool.poetry.group.examples.dependencies]
+# Optional dependencies for running examples
+matplotlib = "^3.9.0"
+pillow = "^11.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "B905",  # zip without strict parameter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_optional = true
+
+[[tool.mypy.overrides]]
+module = "pygame.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pygame_ce.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--cov=robotron",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.coverage.run]
+source = ["robotron"]
+omit = [
+    "*/tests/*",
+    "*/examples/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

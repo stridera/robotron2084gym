@@ -22,7 +22,7 @@ class Grunt(Base):
     def reset(self):
         self.speed = 7
         self.move_delay = (5, 25)
-        self.move_countdown = random.randrange(*self.move_delay)
+        self.move_countdown = self.random_int(self.move_delay[0], self.move_delay[1])
 
     def move(self):
         """ Grunts move toward the player """
@@ -32,6 +32,6 @@ class Grunt(Base):
     def update(self):
         if self.move_countdown <= 0:
             self.move()
-            self.move_countdown = random.randrange(*self.move_delay)
+            self.move_countdown = self.random_int(self.move_delay[0], self.move_delay[1])
         else:
             self.move_countdown -= 1

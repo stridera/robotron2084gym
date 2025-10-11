@@ -190,6 +190,53 @@ class Base(pygame.sprite.Sprite):
         self.update_animation()
         self.random_location()
 
+    def random_int(self, low: int, high: int) -> int:
+        """
+        Generate a random integer in the range [low, high).
+        Uses seeded RNG if available for reproducibility.
+
+        Args:
+            low (int): Lower bound (inclusive)
+            high (int): Upper bound (exclusive)
+
+        Returns:
+            int: Random integer in range [low, high)
+        """
+        if self.engine.np_random is not None:
+            return self.engine.np_random.integers(low, high)
+        return random.randrange(low, high)
+
+    def random_float(self, low: float = 0.0, high: float = 1.0) -> float:
+        """
+        Generate a random float in the range [low, high).
+        Uses seeded RNG if available for reproducibility.
+
+        Args:
+            low (float): Lower bound (inclusive)
+            high (float): Upper bound (exclusive)
+
+        Returns:
+            float: Random float in range [low, high)
+        """
+        if self.engine.np_random is not None:
+            return self.engine.np_random.uniform(low, high)
+        return random.uniform(low, high)
+
+    def random_choice(self, seq):
+        """
+        Choose a random element from a sequence.
+        Uses seeded RNG if available for reproducibility.
+
+        Args:
+            seq: Sequence to choose from
+
+        Returns:
+            Random element from sequence
+        """
+        if self.engine.np_random is not None:
+            return self.engine.np_random.choice(seq)
+        return random.choice(seq)
+
     def random_direction(self):
         """
         Return a random integer representing one of the 8 cardinal directions.
@@ -197,7 +244,7 @@ class Base(pygame.sprite.Sprite):
         Returns:
             int: The directional value.
         """
-        return random.randrange(1, 8)
+        return self.random_int(1, 9)
 
     def random_location(self):
         """
@@ -212,8 +259,8 @@ class Base(pygame.sprite.Sprite):
         tries = 0
         while not valid_location:
             tries += 1
-            self.rect.x = self.play_rect.x + random.randrange(self.play_rect.width - sprite_width)
-            self.rect.y = self.play_rect.y + random.randrange(self.play_rect.height - sprite_height)
+            self.rect.x = self.play_rect.x + self.random_int(0, self.play_rect.width - sprite_width)
+            self.rect.y = self.play_rect.y + self.random_int(0, self.play_rect.height - sprite_height)
 
             if tries > 25:
                 print("Warning!  Enemy Placement Overflow.")

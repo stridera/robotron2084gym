@@ -34,9 +34,9 @@ class Quark(Generator):
 
     def move(self):
         if self.turn_delay == 0:
-            self.turn_delay += random.randint(*self.move_delays)
-            self.vector = pygame.Vector2(random.choice([-self.speed, self.speed]),
-                                         random.choice([-self.speed, self.speed]))*5
+            self.turn_delay += self.random_int(self.move_delays[0], self.move_delays[1] + 1)
+            self.vector = pygame.Vector2(self.random_choice([-self.speed, self.speed]),
+                                         self.random_choice([-self.speed, self.speed]))*5
         else:
             self.turn_delay -= 1
 

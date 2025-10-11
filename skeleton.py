@@ -29,13 +29,13 @@ from robotron import RobotronEnv
 
 
 def main(starting_level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False):
-    env = RobotronEnv(starting_level, lives, fps, godmode=godmode)
+    env = RobotronEnv(level=starting_level, lives=lives, fps=fps, godmode=godmode, headless=False)
     board_size = env.get_board_size()
     print(f"Board Size: {board_size}")  # Default Board Size: (665, 492)
     env.reset()
     while True:
-        _image, reward, isDead, data = env.step(env.action_space.sample())
-        score, level, lives, family, data = data.values()
+        _image, reward, isDead, truncated, info = env.step(env.action_space.sample())
+        score, level, lives, family, data = info.values()
         print(f"Score: {score} | Level: {level} | Lives: {lives} | Reward: {reward} | Dead: {isDead}")
         print(f"Family Remaining: {family} | Objects: {data}")
         """
@@ -56,4 +56,4 @@ if __name__ == "__main__":
     parser.add_argument('--godmode', action='store_true', help='Enable GOD Mode (Can\'t die.)')
 
     args = parser.parse_args()
-    main(args.level, args.fps, args.godmode)
+    main(args.level, args.lives, args.fps, args.godmode)

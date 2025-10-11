@@ -34,10 +34,10 @@ class Hulk(Base):
         self.speed = 7
         self.turn_percentage = 20
         self.move_delay = (5, 25)
-        self.move_countdown = random.randrange(*self.move_delay)
+        self.move_countdown = self.random_int(self.move_delay[0], self.move_delay[1])
 
         self.move_directions = [self.UP, self.RIGHT, self.DOWN, self.LEFT]
-        self.direction = random.choice(self.move_directions)
+        self.direction = self.random_choice(self.move_directions)
         self.animation_direction = self.get_direction_string(self.direction)
 
     def get_direction_string(self, direction: int):
@@ -62,7 +62,7 @@ class Hulk(Base):
     def turn(self):
         """ Find a new direction to move. """
         idx = self.move_directions.index(self.direction)
-        if random.randrange(0, 1) == 0:  # Turn Right
+        if self.random_int(0, 2) == 0:  # Turn Right
             idx += 1
             if idx >= len(self.move_directions):
                 idx = 0
@@ -75,7 +75,7 @@ class Hulk(Base):
 
     def move(self):
         """ Hulks move in 4 directions, up down left right.  They randomly do 90deg turns left or right. """
-        if random.randrange(1, 100) < self.turn_percentage:
+        if self.random_int(1, 101) < self.turn_percentage:
             self.turn()
 
         i = 0
@@ -94,7 +94,7 @@ class Hulk(Base):
     def update(self):
         if self.move_countdown <= 0:
             self.move()
-            self.move_countdown = random.randrange(*self.move_delay)
+            self.move_countdown = self.random_int(self.move_delay[0], self.move_delay[1])
         else:
             self.move_countdown -= 1
 

@@ -172,12 +172,13 @@ class Input():
 
 def main(level: int = 1, lives: int = 3, fps: int = 30, godmode: bool = False):
     """
-    Run the robotron environment for a human to play.add()
+    Run the robotron environment for a human to play.
 
-    args:
-        level (int): The level to start on
-        fps (int): The fps to run the engine at (passed to pygame)
-        godmode (bool): Enable godmode (no deaths)
+    Args:
+        level: The level to start on
+        lives: Number of lives to start with
+        fps: The fps to run the engine at (passed to pygame)
+        godmode: Enable godmode (no deaths)
     """
     print("FPS: ", fps)
     env = RobotronEnv(level=level, lives=lives, fps=fps, godmode=godmode, headless=False)

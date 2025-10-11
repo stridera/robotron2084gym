@@ -1,6 +1,8 @@
-cloudpickle==2.2.1
-gym==0.26.2
-gym-notices==0.0.8
-numpy==1.24.2
-pygame==2.1.3
-PyYAML==6.0
+# Legacy requirements.txt for backward compatibility
+# For new installations, please use Poetry: poetry install
+# For pip installations: pip install -r requirements.txt
+
+gymnasium>=1.0.0,<2.0.0
+numpy>=1.26.0,<3.0.0
+pygame-ce>=2.5.0,<3.0.0
+pyyaml>=6.0.1,<7.0.0
