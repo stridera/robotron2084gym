@@ -55,6 +55,11 @@ class Config:
         missing_keys = [key for key in self.REQUIRED_KEYS if key not in self.config]
         if missing_keys:
             raise ValueError(f"Missing required configuration keys: {', '.join(missing_keys)}")
+        
+        # Validate that waves is not empty
+        waves = self.config.get('waves', [])
+        if not waves or len(waves) == 0:
+            raise ValueError("Configuration must contain at least one wave")
 
     def get(self, key: str, default: Any = None) -> Any:
         """

@@ -49,6 +49,7 @@ class Engine:
         if headless:
             print("Running in headless mode (off-screen rendering).")
             os.environ["SDL_VIDEODRIVER"] = "dummy"
+        os.environ["SDL_AUDIODRIVER"] = "dummy"  # Disable audio to prevent ALSA warnings
 
         pygame.init()
 
@@ -130,7 +131,8 @@ class Engine:
         self.family_collected = 0
 
         # Load all family/enemies for the level.  Mikey should be first to facilitate the 'Mikey bug'
-        wave_level = self.level if self.level < 20 else 20 + self.level % 20
+        # Calculate which wave to use based on level and repeat behavior
+        wave_level = self._calculate_wave_level(self.level)
         level_data = self.waves[wave_level]
         (grunts, electrodes, hulks, brains, sphereoids, quarks, mommies, daddies, mikeys) = level_data
         _ = [self._add_family(Mikey(self)) for _ in range(mikeys)]
@@ -157,6 +159,49 @@ class Engine:
         self.family_collected += 1
         self.score += min(self.family_collected * 1000, 5000)
         return self.family_collected
+
+    def _calculate_wave_level(self, level: int) -> int:
+        """
+        Calculate which wave configuration to use for a given level.
+        
+        Supports the original Robotron behavior:
+        - Levels 0-39: Use waves 0-39
+        - Level 40+: Repeat starting from wave 20 (so level 40 = wave 20, 41 = wave 21, etc.)
+        
+        Also supports custom repeat behavior via 'repeat_at' config option.
+        If no repeat_at is specified and we dofn't have exactly 40 waves, 
+        cycles through all available waves.
+        
+        Args:
+            level: The current level (0-indexed)
+            
+        Returns:
+            The wave index to use (0-indexed)
+        """
+        num_waves = len(self.waves)
+        repeat_at = self.config.get('repeat_at', None)
+        
+        # If we have a specific repeat_at configuration
+        if repeat_at is not None:
+            if level < num_waves:
+                return level
+            else:
+                # After exhausting all waves, repeat starting from repeat_at
+                cycle_length = num_waves - repeat_at
+                return repeat_at + ((level - repeat_at) % cycle_length)
+        
+        # Original Robotron behavior: 40 waves, then repeat from wave 20
+        elif num_waves == 40:
+            if level < 40:
+                return level
+            else:
+                # After level 39 (wave 39), repeat starting from wave 20 (level 21)
+                # Level 40 -> wave 20, Level 41 -> wave 21, etc.
+                return 20 + ((level - 40) % 20)
+        
+        # Default behavior: cycle through all available waves
+        else:
+            return level % num_waves
 
     def _get_play_area_distance(self) -> float:
         """

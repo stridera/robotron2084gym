@@ -160,6 +160,14 @@ class Base(pygame.sprite.Sprite):
         else:
             animations = self.animations[self.animation_direction or 'down']
 
+        # Handle empty animation lists (e.g., Electrode on certain levels)
+        if not animations:
+            # Create a minimal transparent image if animations list is empty
+            if not hasattr(self, 'image') or self.image is None:
+                self.image = pygame.Surface((1, 1), pygame.SRCALPHA)
+                self.image.fill((0, 0, 0, 0))
+            return
+
         if self.animation_step >= (self.cycle or len(animations)):
             self.animation_step = 0
 
