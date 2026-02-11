@@ -42,7 +42,7 @@ types-pyyaml = "^6.0.12"
 [tool.poetry.group.examples.dependencies]
 # Optional dependencies for running examples
 matplotlib = "^3.9.0"
-pillow = "^11.0.0"
+pillow = "^12.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
