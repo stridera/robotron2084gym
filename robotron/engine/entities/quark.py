@@ -1,6 +1,4 @@
 """ Quark Enemy Module"""
-import random
-
 import pygame
 
 from .generator import Generator
@@ -18,8 +16,8 @@ class Quark(Generator):
     SPEED = 1
     MAX_MOVE_DELAY = [5, 30]
 
-    def setup(self):
-        super().setup()
+    def reset(self):
+        super().reset()
         self.speed = self.config('speed', self.SPEED)
         self.move_delays = self.config('move_delays', self.MAX_MOVE_DELAY)
         self.vector = pygame.Vector2(0)
@@ -42,6 +40,9 @@ class Quark(Generator):
 
         self.rect.center += self.vector
         self.rect.clamp_ip(self.play_rect)
+
+    def get_spawn_type(self):
+        return 'Tank'
 
     def get_spawn(self):
         return Tank(self.engine, center=self.rect.center)

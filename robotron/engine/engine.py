@@ -2,6 +2,7 @@
 """The Robotron Game Engine"""
 import math
 import os
+from enum import Enum, auto
 from typing import List, Tuple, Dict, Optional
 
 import numpy as np
@@ -10,6 +11,14 @@ import pygame
 from .config import Config
 from .graphics import load_graphics
 from .entities import Player, Mommy, Daddy, Mikey, Grunt, Electrode, Hulk, Sphereoid, Quark, Brain
+
+
+class GameState(Enum):
+    """Engine state machine states."""
+    WARPING_IN = auto()
+    PLAYING = auto()
+    DYING = auto()
+    LEVEL_COMPLETE = auto()
 
 
 class Engine:
@@ -77,12 +86,35 @@ class Engine:
         self.to_kill_group = pygame.sprite.Group()  # Enemies that need to die to advance the level.
         self.all_group = pygame.sprite.Group()  # All sprites on screen.
         self.waves = self.config.get('waves')
-        self.to_kill_group_types = ['Grunt', 'Sphereoid', 'Enforcer', 'Brain', 'Quark', 'Tank']
+        self.to_kill_group_types = ['Grunt', 'Sphereoid', 'Enforcer', 'Brain', 'Quark', 'Tank', 'Prog']
 
         self.extra_life_score = self.config.get('extra_life_score')
         self.player = None
         self.player_box = None
         self.family_collected = 0
+
+        # State machine for game phases
+        self.state = GameState.PLAYING
+        self.state_timer = 0
+        self.warp_in_duration = self.config.get('warp_in_duration', 30)
+        self.death_duration = self.config.get('death_duration', 30)
+        self.level_complete_duration = self.config.get('level_complete_duration', 20)
+        self._warp_in_sprites = []
+        self._game_over_pending = False
+
+        # Visual effects
+        self.effects_enabled = self.config.get('effects_enabled', True)
+        # Arcade-style border color palette (cycles continuously)
+        self._border_colors = [
+            (238, 5, 8),     # Red (original)
+            (255, 100, 0),   # Orange
+            (255, 255, 0),   # Yellow
+            (0, 255, 0),     # Green
+            (0, 200, 255),   # Cyan
+            (100, 100, 255), # Blue
+            (200, 0, 255),   # Purple
+            (255, 0, 200),   # Pink
+        ]
 
         self._initialize_level()
 
@@ -103,7 +135,7 @@ class Engine:
             move: Movement direction (0-8)
             shoot: Shooting direction (0-8)
         """
-        if not self.done:
+        if not self.done and self.state == GameState.PLAYING:
             self.player.move(move)
             self.player.shoot(shoot)
 
@@ -121,6 +153,7 @@ class Engine:
     def _initialize_level(self):
         """
         Setup a new level.  Removes existing sprites, setups up new sprites.  Zero level values.
+        Starts in WARPING_IN state so enemies materialize before gameplay begins.
         """
         for sprite in self.all_group:
             sprite.kill()
@@ -128,6 +161,7 @@ class Engine:
         self.player = Player(self)
         self._add_sprite(self.player)
 
+        self.player_box = None
         self.family_collected = 0
 
         # Load all family/enemies for the level.  Mikey should be first to facilitate the 'Mikey bug'
@@ -144,6 +178,17 @@ class Engine:
         _ = [self._add_enemy(Sphereoid(self)) for _ in range(sphereoids)]
         _ = [self._add_enemy(Quark(self)) for _ in range(quarks)]
         _ = [self._add_enemy(Brain(self)) for _ in range(brains)]
+
+        # Store original sprite images for warp-in effect
+        if self.warp_in_duration > 0:
+            self._warp_in_sprites = []
+            for sprite in self.all_group:
+                if sprite != self.player:
+                    self._warp_in_sprites.append((sprite, sprite.image.copy()))
+            self.state = GameState.WARPING_IN
+            self.state_timer = self.warp_in_duration
+        else:
+            self.state = GameState.PLAYING
 
     def _set_family_collected(self) -> int:
         """
@@ -169,7 +214,7 @@ class Engine:
         - Level 40+: Repeat starting from wave 20 (so level 40 = wave 20, 41 = wave 21, etc.)
         
         Also supports custom repeat behavior via 'repeat_at' config option.
-        If no repeat_at is specified and we dofn't have exactly 40 waves, 
+        If no repeat_at is specified and we don't have exactly 40 waves,
         cycles through all available waves.
         
         Args:
@@ -281,9 +326,20 @@ class Engine:
         return self.player_box
 
     def _add_background(self) -> None:
-        """Set the background color and draw the play area box"""
+        """Set the background color and draw the play area border with optional color cycling."""
         self.screen.fill((0, 0, 0))
-        pygame.draw.rect(self.screen, [238, 5, 8], self.play_rect.inflate(15, 15), 5)
+
+        if self.effects_enabled:
+            # Border cycles through colors; faster during level complete/warp-in
+            if self.state in (GameState.LEVEL_COMPLETE, GameState.WARPING_IN):
+                color_idx = (self.frame * 3) % len(self._border_colors)
+            else:
+                color_idx = (self.frame // 4) % len(self._border_colors)
+            border_color = self._border_colors[color_idx]
+        else:
+            border_color = (238, 5, 8)
+
+        pygame.draw.rect(self.screen, border_color, self.play_rect.inflate(15, 15), 5)
 
     def _add_info(self) -> None:
         """Add the text info for human consumption. Does not replicate the original game."""
@@ -327,7 +383,7 @@ class Engine:
     # Lifecycle Management
     def update(self) -> Tuple[np.ndarray, int, int, int, bool]:
         """
-        The allmighty update loop. Triggers the world update.
+        The main update loop. Manages game state transitions and triggers world updates.
 
         Returns:
             Tuple of (image, score, lives, level, done)
@@ -336,28 +392,21 @@ class Engine:
         self.clock.tick(self.fps)
         self.frame += 1
 
-        # You start the game with 3 men and receive and additional man for every 25,000 points you get.
+        # Extra life check
         if self.extra_life_score > 0:
             if self.score // self.extra_life_score > self.extra_lives:
                 self.lives += 1
                 self.extra_lives += 1
 
         if not self.done:
-            self.all_group.update()
-
-            # Check to see if we hit an enemy
-            if not self.godmode and pygame.sprite.spritecollide(self.player, self.enemy_group, False):
-                self.family_collected = 0
-                if self.lives > 0:
-                    self.lives -= 1
-                    for sprite in self.all_group:
-                        sprite.reset()
-                else:
-                    self.done = True
-
-            if not self.to_kill_group:
-                self.level += 1
-                self._initialize_level()
+            if self.state == GameState.WARPING_IN:
+                self._update_warp_in()
+            elif self.state == GameState.PLAYING:
+                self._update_playing()
+            elif self.state == GameState.DYING:
+                self._update_dying()
+            elif self.state == GameState.LEVEL_COMPLETE:
+                self._update_level_complete()
 
         # Always draw (to off-screen surface in headless mode)
         self.draw()
@@ -366,11 +415,113 @@ class Engine:
 
         return (image, self.score, self.lives, self.level, self.done)
 
+    def _update_warp_in(self):
+        """
+        Warp-in phase: enemies materialize from small dots to full size.
+        In the arcade, enemies appear as colored pixels that expand to their full sprites.
+        """
+        self.state_timer -= 1
+        progress = 1.0 - (self.state_timer / self.warp_in_duration)
+
+        for sprite, original_image in self._warp_in_sprites:
+            if sprite not in self.all_group:
+                continue
+            orig_w, orig_h = original_image.get_size()
+            # Scale from a tiny dot up to full size
+            w = max(2, int(orig_w * progress))
+            h = max(2, int(orig_h * progress))
+            center = sprite.rect.center
+            scaled = pygame.transform.scale(original_image, (w, h))
+
+            # Color tint effect during warp-in: flash through colors
+            if self.effects_enabled and progress < 0.85:
+                tint_color = self._border_colors[(self.frame * 2) % len(self._border_colors)]
+                tint_surface = pygame.Surface((w, h), pygame.SRCALPHA)
+                tint_surface.fill((*tint_color, 120))
+                scaled = scaled.copy()
+                scaled.blit(tint_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+            sprite.image = scaled
+            sprite.rect = sprite.image.get_rect(center=center)
+
+        if self.state_timer <= 0:
+            # Restore original images
+            for sprite, original_image in self._warp_in_sprites:
+                if sprite not in self.all_group:
+                    continue
+                center = sprite.rect.center
+                sprite.image = original_image
+                sprite.rect = sprite.image.get_rect(center=center)
+            self._warp_in_sprites = []
+            self.state = GameState.PLAYING
+
+    def _update_playing(self):
+        """Normal gameplay: update sprites, check collisions, check level clear."""
+        self.all_group.update()
+
+        # Check to see if we hit an enemy
+        if not self.godmode and pygame.sprite.spritecollide(self.player, self.enemy_group, False):
+            self.family_collected = 0
+            if self.lives > 0:
+                self.lives -= 1
+                self._start_death_sequence()
+            else:
+                self._start_death_sequence(game_over=True)
+
+        elif not self.to_kill_group:
+            if self.level_complete_duration > 0:
+                self.state = GameState.LEVEL_COMPLETE
+                self.state_timer = self.level_complete_duration
+            else:
+                self.level += 1
+                self._initialize_level()
+
+    def _start_death_sequence(self, game_over=False):
+        """Begin the player death pause. Sprites freeze, then reset."""
+        self._game_over_pending = game_over
+        if self.death_duration > 0:
+            self.state = GameState.DYING
+            self.state_timer = self.death_duration
+            # Hide the player sprite during death pause
+            self.player.image = pygame.Surface((1, 1), pygame.SRCALPHA)
+        else:
+            self._finish_death_sequence()
+
+    def _update_dying(self):
+        """Death pause: all sprites frozen, just count down."""
+        self.state_timer -= 1
+        if self.state_timer <= 0:
+            self._finish_death_sequence()
+
+    def _finish_death_sequence(self):
+        """Complete the death: either game over or reset sprites for respawn."""
+        if self._game_over_pending:
+            self.done = True
+        else:
+            for sprite in self.all_group:
+                sprite.reset()
+            self.state = GameState.PLAYING
+
+    def _update_level_complete(self):
+        """Brief pause after clearing all enemies before advancing."""
+        self.state_timer -= 1
+        if self.state_timer <= 0:
+            self.level += 1
+            self._initialize_level()
+
     def draw(self) -> None:
         """Paint the window or off-screen surface."""
         self._add_background()
         self._add_info()
         self.all_group.draw(self.screen)
+
+        if self.effects_enabled:
+            # Level complete: rapid flash overlay
+            if self.state == GameState.LEVEL_COMPLETE:
+                if self.frame % 4 < 2:
+                    flash = pygame.Surface(self.play_rect.size, pygame.SRCALPHA)
+                    flash.fill((255, 255, 255, 40))
+                    self.screen.blit(flash, self.play_rect.topleft)
 
         # Only update display if not in headless mode
         if not self.headless:
@@ -415,6 +566,7 @@ class Engine:
         self.lives = self.start_lives
         self.extra_lives = 0
         self.done = False
+        self._game_over_pending = False
 
         self._initialize_level()
 

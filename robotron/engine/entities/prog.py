@@ -1,6 +1,4 @@
 """ Programmed Human Enemy Module"""
-import random
-
 import pygame
 
 from .floater import Floater

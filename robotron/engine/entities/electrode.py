@@ -5,19 +5,23 @@
 from .base import Base
 
 
+# Enemy types that electrodes interact with
+# Grunts die on contact (electrode also dies)
+# Hulks crush electrodes
+# All other enemies (Sphereoids, Enforcers, Brains, etc.) fly over them
+GROUND_ENEMY_TYPES = ('Grunt', 'Hulk')
+
+
 class Electrode(Base):
     """
     Electrode Enemy Class.
 
     Behavior:
-        The Enrichment Center reminds you that the Weighted Companion Cube will never threaten to stab you and,
-        in fact, cannot speak. In the event that the Weighted Companion Cube does speak, the Enrichment Center
-        urges you to disregard its advice.
-
-        Electrodes, however, will stab you and thus you are recommended to keep your distance.
-
-        They don't move...
-        They kill grunts and die.  Hulks kill them.  Sphereoids and enforcers fly over them.
+        Electrodes are stationary obstacles.
+        They kill grunts on contact (both die).
+        Hulks crush them.
+        Flying enemies (Sphereoids, Enforcers, Brains, cruise missiles) pass over them.
+        The player dies on contact.
     """
 
     def reset(self):
@@ -44,9 +48,20 @@ class Electrode(Base):
 
     def update(self):
         if self.alive:
-            if any(self.rect.colliderect(sprite.rect)
-                   for sprite in self.engine._get_enemy_group() if self != sprite):
-                self.alive = False
+            for sprite in self.engine._get_enemy_group():
+                if sprite is self:
+                    continue
+                sprite_type = sprite.__class__.__name__
+                if sprite_type not in GROUND_ENEMY_TYPES:
+                    continue
+                if self.rect.colliderect(sprite.rect):
+                    if sprite_type == 'Grunt':
+                        # Grunts die on electrode contact, electrode also dies
+                        self.engine.score += sprite.score()
+                        sprite.die(self)
+                    # Both grunts and hulks destroy the electrode
+                    self.alive = False
+                    break
         else:
             self.animation_step += 1
             if self.animation_step >= len(self.animations):

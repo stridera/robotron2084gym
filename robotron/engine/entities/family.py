@@ -1,6 +1,4 @@
 """ Family Sprite Module """
-import random
-
 import pygame
 
 from .base import Base
@@ -57,7 +55,7 @@ class Family(Base):
     def move(self):
         """ Family Members just choose a direction and go.  They change randomly or when they hit a wall. """
         if self.engine.frame % self.move_delay == 0:
-            valid_directions = list(range(1, 8))
+            valid_directions = list(range(1, 9))
 
             # If we move into a wall or quark, we need to choose a new direction
             direction = self.move_direction

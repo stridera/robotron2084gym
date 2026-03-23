@@ -1,5 +1,4 @@
 """ Enforcer Enemy Module """
-import random
 import pygame
 
 from .base import Base
@@ -25,16 +24,15 @@ class EnforcerBullet(Base):
     def get_trajectory(self):
         """Calculate the trajectory of the bullet."""
         if not self.vector:
-            engine = self.engine
             distance_to_player = self.get_distance_to_player()
             speed = ((distance_to_player * self.max_speed) / self.max_distance) + 1
-            player_rect = engine.player.rect
+            player_rect = self.engine.player.rect
             x_trajectory = self.random_int(player_rect.left - 10, player_rect.right + 11)
             y_trajectory = self.random_int(player_rect.top - 10, player_rect.bottom + 11)
             new_vector = pygame.Vector2(x_trajectory, y_trajectory) - pygame.Vector2(self.rect.center)
             if new_vector.length() == 0:
-                # Unlikely to happen, but if it does, try new random values.
-                return self.get_trajectory()
+                # Spawned exactly on player - just shoot right
+                new_vector = pygame.Vector2(1, 0)
             self.vector = new_vector.normalize() * speed
             self.random_vector = pygame.Vector2(self.random_float(), self.random_float())
         else:

@@ -1,6 +1,4 @@
-""" Huld Monster Module"""
-import random
-
+""" Hulk Monster Module"""
 import pygame
 
 from .base import Base
@@ -56,8 +54,7 @@ class Hulk(Base):
             return 'down'
         if direction in [self.LEFT, self.UP_LEFT, self.DOWN_LEFT]:
             return 'left'
-        if direction in [self.RIGHT, self.UP_RIGHT, self.DOWN_RIGHT]:
-            return 'right'
+        return 'right'
 
     def turn(self):
         """ Find a new direction to move. """

@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Robotron 2084 Game Module
+Robotron 2084 Gymnasium Environment
 
-Provides a way to play the Robotron 2084 game one frame at a time.
-
-Goal:
-    This is an attempt to create Robotron 2084 for reinforcement learning models.
-    It follows the Gymnasium (https://gymnasium.farama.org/) protocol for
-    easy implementation.  The end goal is to create a model that will play
-    the xbox 360 version on the actual hardware.
-
-    See https://github.com/stridera/robotron for my reinforcement learning progress.
+A faithful recreation of Robotron 2084 as a Gymnasium environment for
+reinforcement learning research.
 
 Example:
     >>> from robotron import RobotronEnv
@@ -18,6 +11,10 @@ Example:
     >>> obs, info = env.reset()
     >>> obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
 
+Or via gymnasium.make:
+    >>> import gymnasium as gym
+    >>> import robotron  # registers the env
+    >>> env = gym.make('Robotron-v0', headless=True, always_move=True)
 """
 from typing import Tuple, Optional
 import numpy as np
@@ -30,10 +27,14 @@ from .utils import crop
 
 class RobotronEnv(gym.Env):
     """
-    The Robotron 2084 Environment.
+    Robotron 2084 Gymnasium Environment.
+
+    Observation: RGB image of the play area (492x665x3 uint8)
+    Action: Discrete — movement * directions + shooting
+    Reward: score_delta / 100.0, death = -1.0
     """
 
-    FAMILY_REWARD = 10.0
+    metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
 
     def __init__(self,
                  level: int = 1,
@@ -44,99 +45,81 @@ class RobotronEnv(gym.Env):
                  always_move: bool = False,
                  render_mode: Optional[str] = None,
                  headless: bool = True,
+                 max_episode_steps: Optional[int] = None,
                  seed: Optional[int] = None):
         """
-        Setup the environment
-
-        args:
-            level (int): What level to start at.  Default: 1
-            fps (int): Frames per second to run at.  Default: 30
-            godmode (bool): Are you a god? (Can't die.) Default: False
-            always_move (bool): Always move/shoot.  Drops action space from 9x9 to 8x8  Default: False
-            headless (bool): Skip creating the screen.
-            render_mode (str): How to render the environment ('human' or 'rgb_array')
-            seed (int): Random seed for reproducibility
+        Args:
+            level: Starting level (1-40).
+            lives: Number of lives.
+            fps: Frames per second (0 = unlimited, best for training).
+            config_path: Path to custom config YAML.
+            godmode: Invincibility for debugging.
+            always_move: Drop no-op from action space (81 -> 64).
+            render_mode: 'human' (pygame window) or 'rgb_array'.
+            headless: Off-screen rendering. Automatically set to False
+                      when render_mode='human'.
+            max_episode_steps: Truncate episode after this many steps.
+                               None = no limit (play until game over).
+            seed: Deprecated — pass seed to reset() instead.
         """
+        # render_mode='human' requires a display window
+        if render_mode == 'human':
+            headless = False
+
         self.engine = Engine(start_level=level, lives=lives, fps=fps, config_path=config_path,
                              godmode=godmode, headless=headless)
         width, height = self.engine.play_rect.size
         play_area = (height, width, 3)
 
         self.score = 0
+        self._elapsed_steps = 0
+        self._max_episode_steps = max_episode_steps
 
         # Gym Requirements
         self.action_mod = 1 if always_move else 0
         self.actions = 8 if always_move else 9
         self.action_space = gym.spaces.Discrete(self.actions * self.actions)
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=play_area, dtype=np.uint8)
-        self.metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 30}
 
         assert render_mode is None or render_mode in self.metadata["render_modes"]
-        self.render_mode = 'rgb_array' if render_mode is None else render_mode
+        self.render_mode = render_mode
 
     def get_board_size(self):
-        """
-        Get the size of the board
-
-        returns:
-            (int, int): The width and height of the board
-        """
-
+        """Returns (width, height) of the play area in pixels."""
         return self.engine.play_rect.size
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, dict]:
         """
-        Reset the game and get an initial observation
+        Reset the game and get an initial observation.
 
         Args:
-            seed (int, optional): Random seed for reproducibility
-            options (dict, optional): Additional reset options
+            seed: Random seed for reproducibility.
+            options: Additional reset options (unused).
 
         Returns:
-            Tuple[np.ndarray, dict]: The initial observation and info dict
+            Tuple of (observation, info dict).
         """
         super().reset(seed=seed)
 
-        # Seed the engine's random number generator
-        # Note: super().reset() always creates self.np_random, even if seed is None
         self.engine.set_seed(self.np_random)
 
         self.score = 0
+        self._elapsed_steps = 0
         obs, info = self.engine.reset()
         return self.get_state(obs), info
 
-    def step(self,  action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
-        r"""
-        Play one frame of the game.  We return the obs, reward, terminated, truncated, and
-        any additional info.  Follows the Gymnasium API specification.
-        https://gymnasium.farama.org/api/env/
-
-        args:
-            action (int): The inputs to the game. This consists of two ints between 0-8
-            following the cardinal points of the joystick.
-
-                8   1   2
-                  \ | /
-                7 - 0 - 3
-                  / | \
-                6   5   4
-
-            If we have always_move set to True, we drop the Noop action. (Basically add 1 to each action)
-
-            Final equation should be: 
-            ```python
-            actions = 8 if always_move else 9
-            action = left * actions + right
-            ```
-
-        returns:
-            Tuple[np.ndarray, float, bool, bool, dict]: observation, reward, terminated, truncated, info
-
-        raises:
-            ValueError: Raised if input is invalid.
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """
+        Execute one game step.
 
-        if not 0 <= action <= self.action_space.n:
+        Args:
+            action: Discrete action encoding movement and shooting.
+                    action = movement_dir * num_directions + shoot_dir
+
+        Returns:
+            Tuple of (observation, reward, terminated, truncated, info).
+        """
+        if not 0 <= action < self.action_space.n:
             raise ValueError(f'Action {action} is invalid.')
 
         move = action // self.actions
@@ -151,7 +134,9 @@ class RobotronEnv(gym.Env):
         if dead:
             reward = -1
 
-        truncated = False  # We don't have a time limit.  You play until you die.
+        self._elapsed_steps += 1
+        truncated = (self._max_episode_steps is not None
+                     and self._elapsed_steps >= self._max_episode_steps)
 
         return self.get_state(image), reward, dead, truncated, {
             'score': score,
@@ -162,32 +147,21 @@ class RobotronEnv(gym.Env):
         }
 
     def get_state(self, image) -> np.ndarray:
-        """
-        Return only the play area of the image.
-
-        returns:
-            np.ndarray: The game image for the current step
-        """
-        image = crop(image, self.engine.play_area)
-        return image
+        """Crop the full screen image to just the play area."""
+        return crop(image, self.engine.play_area)
 
     def render(self):
         """
         Render the environment.
 
         Returns:
-            np.ndarray or None: Returns the rendered frame based on render_mode.
-                - 'rgb_array': Returns the full game image
-                - 'human': Returns None (rendering happens via pygame)
+            ndarray if render_mode='rgb_array', None if 'human'.
         """
         if self.render_mode == 'rgb_array':
             return self.engine.get_image()
         elif self.render_mode == 'human':
-            # Pygame renders automatically in engine.draw()
             return None
 
     def close(self):
-        """
-        Clean up environment resources.
-        """
+        """Clean up environment resources."""
         pygame.quit()

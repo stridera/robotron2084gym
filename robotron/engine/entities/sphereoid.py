@@ -1,6 +1,4 @@
 """Sphereoid Enemy Module"""
-import random
-
 from .enforcer import Enforcer
 from .generator import Generator
 
@@ -33,6 +31,9 @@ class Sphereoid(Generator):
             'sphereoid1', 'sphereoid2', 'sphereoid3', 'sphereoid4',
             'sphereoid5', 'sphereoid6', 'sphereoid7', 'sphereoid8'
         ])
+
+    def get_spawn_type(self):
+        return 'Enforcer'
 
     def get_spawn(self):
         """ Make some babies. """

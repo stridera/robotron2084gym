@@ -1,6 +1,4 @@
 """Tank Enemy and Tank Shell Class"""
-from random import randint, randrange
-
 import pygame
 
 from .base import Base
@@ -38,7 +36,7 @@ class TankShell(Base):
             self.speed = ((distance_to_player * self.max_speed) / max_distance) + self.min_speed
             x, y = self.rect.center
             player_x, player_y = self.engine.player.rect.center
-            attack = randrange(10)
+            attack = self.random_int(0, 10)
             if attack < 2:
                 # reflect off top wall
                 self.vector = self.get_vector_to_point((x + (player_x - x) // 2, self.play_rect.top))
@@ -62,11 +60,11 @@ class TankShell(Base):
         if self.rect.top <= self.play_rect.top:
             self.vector = self.vector.reflect(pygame.Vector2([0, 1]))
         if self.rect.bottom >= self.play_rect.bottom:
-            self.vector = self.vector.reflect(pygame.Vector2([0, -1]))
-        if self.rect.left >= self.play_rect.left:
+            self.vector = self.vector.reflect(pygame.Vector2([0, 1]))
+        if self.rect.left <= self.play_rect.left:
             self.vector = self.vector.reflect(pygame.Vector2([1, 0]))
-        if self.rect.right <= self.play_rect.right:
-            self.vector = self.vector.reflect(pygame.Vector2([-1, 0]))
+        if self.rect.right >= self.play_rect.right:
+            self.vector = self.vector.reflect(pygame.Vector2([1, 0]))
 
         self.rect.clamp_ip(self.play_rect)
 
@@ -97,7 +95,7 @@ class Tank(Base):
         """Setup the sprite."""
         self.bullets = self.config('bullets', self.BULLETS)
         self.shoot_delays = self.config('shoot_delays', self.SHOOT_DELAYS)
-        self.shoot_delay = randint(*self.shoot_delays)
+        self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
         self.active = 0
 
     def get_animations(self):
@@ -120,12 +118,10 @@ class Tank(Base):
             self.shoot_delay -= 1
             if self.shoot_delay == 0:
                 self.bullets -= 1
-                self.shoot_delay = randint(*self.shoot_delays)
+                self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
                 bullet = TankShell(self.engine, center=self.rect.center)
-                self.engine._add_sprite(bullet)
                 self.engine._add_enemy(bullet)
 
     def reset(self):
-        """Reset the sprite after the player dies."""
-        super().reset()
-        self.bullets = self.BULLETS
+        """Tanks are killed on player death. Their parent Quark will respawn and create new ones."""
+        self.kill()

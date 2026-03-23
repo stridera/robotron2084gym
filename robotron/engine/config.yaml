@@ -47,10 +47,20 @@ waves:
 
 extra_life_score: -1
 
+# Visual effects (set to false to disable for RL training)
+effects_enabled: true     # Border color cycling, death flash, level complete flash, warp-in tinting
+
+# Game state transition durations (in frames). Set to 0 to disable.
+warp_in_duration: 30      # Enemies materialize from dots to full size
+death_duration: 30        # Player death explosion animation
+level_complete_duration: 20  # Pause after clearing all enemies
+
 grunt:
     score: 100
     speed: 7
     move_delay: [5, 25]
+    speed_up_interval: 300  # Frames between grunt acceleration
+    min_move_delay: 1       # Fastest move delay grunts can reach
 electrode:
     score: 25
 hulk:
@@ -73,6 +83,7 @@ sphereoid: # Circles that spawn enforcers.  Flies in long wavey patterns.
     move_curvatures: [-50, 50]
     spawn_delays: [20, 64]
     spawn_counts: [1, 5]
+    max_active_spawns: 8   # Max enforcers on screen at once (exploit: keep them alive to block spawning)
 enforcer: # Spawned by sphereoids, shoots crosses
     score: 350
     max_speed: 20
@@ -87,6 +98,7 @@ quark: # Sparky bois that spawn tanks
     move_delays: [5, 30]
     spawn_delays: [8, 120]
     spawn_counts: [1, 5]
+    max_active_spawns: 8   # Max tanks on screen at once
 tank: # Big bois that shoot shells
     score: 350
     bullets: 20

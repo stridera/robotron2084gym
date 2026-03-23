@@ -162,6 +162,68 @@ class TestHeadlessMode:
         env.close()
 
 
+class TestTruncation:
+    """Test max_episode_steps truncation."""
+
+    def test_truncation_triggers(self):
+        """Test that episode truncates after max_episode_steps."""
+        env = RobotronEnv(headless=True, max_episode_steps=10)
+        env.reset(seed=42)
+
+        for i in range(9):
+            _, _, terminated, truncated, _ = env.step(0)
+            if terminated:
+                break
+            assert not truncated, f"Truncated too early at step {i+1}"
+
+        if not terminated:
+            _, _, _, truncated, _ = env.step(0)
+            assert truncated, "Should truncate at step 10"
+
+        env.close()
+
+    def test_no_truncation_by_default(self):
+        """Test that no truncation occurs without max_episode_steps."""
+        env = RobotronEnv(headless=True)
+        env.reset(seed=42)
+
+        for _ in range(100):
+            _, _, terminated, truncated, _ = env.step(0)
+            assert not truncated
+            if terminated:
+                break
+
+        env.close()
+
+    def test_truncation_resets(self):
+        """Test that step counter resets on env.reset()."""
+        env = RobotronEnv(headless=True, max_episode_steps=5)
+        env.reset(seed=42)
+
+        for _ in range(5):
+            env.step(0)
+
+        # Reset should clear the counter
+        env.reset(seed=42)
+        for i in range(4):
+            _, _, _, truncated, _ = env.step(0)
+            assert not truncated
+
+        env.close()
+
+
+class TestRegistration:
+    """Test gymnasium.make registration."""
+
+    def test_gym_make(self):
+        """Test that gym.make('Robotron-v0') works."""
+        import gymnasium as gym
+        env = gym.make('Robotron-v0', headless=True)
+        obs, info = env.reset(seed=42)
+        assert obs.shape[2] == 3
+        env.close()
+
+
 class TestMetadata:
     """Test Gymnasium metadata compliance."""
 
@@ -175,4 +237,11 @@ class TestMetadata:
         assert 'human' in env.metadata['render_modes']
         assert 'rgb_array' in env.metadata['render_modes']
 
+        env.close()
+
+    def test_check_env(self):
+        """Test gymnasium check_env compliance."""
+        from gymnasium.utils.env_checker import check_env
+        env = RobotronEnv(headless=True)
+        check_env(env, skip_render_check=True)
         env.close()

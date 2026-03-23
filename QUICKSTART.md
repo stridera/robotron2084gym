@@ -1,106 +1,71 @@
 # Robotron 2084 - Quick Start Guide
 
-## 🚀 Installation (60 seconds)
+## Installation
 
 ```bash
-# Using Poetry (recommended)
+# Poetry (recommended)
 poetry install && poetry shell
 
-# Using pip
+# Or pip
 pip install -r requirements.txt
 ```
 
-## 🎮 Run the Game
+## Play as a Human
 
 ```bash
-# Human playable (keyboard: WASD + IJKL)
-python main.py
-
-# Or with Poetry
-poetry run python main.py
+python main.py                    # Default: level 1, 3 lives, 30 fps
+python main.py --level 5          # Start at level 5
+python main.py --lives 9          # 9 lives
+python main.py --fps 60           # 60 FPS
+python main.py --godmode          # Can't die
 ```
 
-## 🤖 Use in Your RL Code
+**Controls:** WASD to move, IJKL to shoot, Enter to restart, Escape to quit.
+
+## Use for RL Training
 
 ```python
 from robotron import RobotronEnv
 
-# Create environment
 env = RobotronEnv(
-    fps=0,           # Max speed
-    headless=True,   # Off-screen rendering (fast + visual observations!)
-    always_move=True # Smaller action space (64 vs 81)
+    headless=True,       # No window (still returns RGB observations)
+    fps=0,               # Max speed
+    always_move=True,    # Action space: 64 instead of 81
+    lives=5,             # More lives = more learning
 )
 
-# Standard Gymnasium API
 obs, info = env.reset(seed=42)
 
 while True:
-    action = your_agent.predict(obs)
-    obs, reward, done, truncated, info = env.step(action)
-    if done:
-        break
+    action = env.action_space.sample()  # Your agent here
+    obs, reward, terminated, truncated, info = env.step(action)
+    if terminated:
+        obs, info = env.reset()
 
 env.close()
 ```
 
-## 📊 Key Info
+For training, disable visual effects in your config YAML:
 
-| Feature | Value |
-|---------|-------|
-| Action Space | Discrete(81) or Discrete(64) |
-| Observation | RGB (492×665×3) |
-| FPS (headless) | ~500-1000 |
-| Python | 3.10, 3.11, 3.12 |
-| Seeded | ✅ Fully deterministic |
-
-## 🔧 Common Commands
-
-```bash
-# Run tests
-make test
-
-# Format code
-make format
-
-# Run examples
-make examples
-
-# Clean up
-make clean
+```yaml
+effects_enabled: false
+warp_in_duration: 0
+death_duration: 0
+level_complete_duration: 0
 ```
 
-## 📖 More Info
+## Key Facts
 
-- **README.md** - Full documentation
-- **examples/** - Code samples
-- **CLAUDE.md** - Architecture overview
-- **CONTRIBUTING.md** - Development guide
+| | |
+|-|-|
+| **Action Space** | Discrete(64) with `always_move=True`, Discrete(81) without |
+| **Observation** | RGB uint8, 492x665x3 (play area only) |
+| **Rewards** | Score delta / 100, death = -1.0, family = 10-50 |
+| **Headless FPS** | ~500-1000 on modern hardware |
+| **Deterministic** | Yes, via `env.reset(seed=N)` |
 
-## 💡 Pro Tips
+## More Info
 
-1. **Always use seeding** for reproducible experiments: `env.reset(seed=42)`
-2. **Use headless mode** for training: off-screen rendering gives you speed + visual observations
-3. **Check examples/** for common patterns
-4. **Read info dict** for game state: `info['score']`, `info['lives']`, etc.
-
-## 🐛 Troubleshooting
-
-**Import error?**
-```bash
-poetry install  # or pip install -r requirements.txt
-```
-
-**Too slow?**
-```python
-env = RobotronEnv(fps=0, headless=True)  # Max speed!
-```
-
-**Not deterministic?**
-```python
-env.reset(seed=42)  # Always seed!
-```
-
----
-
-**Ready to train?** Check out `examples/basic_usage.py` to get started!
+- **README.md** — Full docs, RL integration examples, config reference
+- **examples/** — Runnable code samples
+- **robotron/engine/config.yaml** — All configurable game parameters

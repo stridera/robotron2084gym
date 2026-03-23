@@ -1,6 +1,4 @@
 """Brain Enemy and Cruise Missile Module"""
-from random import choice, randint
-
 import pygame
 
 from .base import Base
@@ -97,7 +95,7 @@ class Brain(Base):
         self.target = family_sprites[0] if family_sprites and use_mikey_bug else None
         self.speed = self.config('speed') or self.SPEED
         self.vector = pygame.Vector2(0)
-        self.shoot_delay = randint(*self.shoot_delays)
+        self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
 
         self.programming = False
         self.programming_time = self.config('programming_time', self.PROGRAMMING_TIME)
@@ -123,7 +121,7 @@ class Brain(Base):
         if self.target is None or not self.engine.family_group.has(self.target):
             family_group = self.engine.family_group.sprites()
             if family_group:
-                self.target = choice(family_group)
+                self.target = self.random_choice(family_group)
             else:
                 self.target = self.engine.player
 
@@ -135,9 +133,9 @@ class Brain(Base):
             elif x < 0:
                 self.animation_direction = 'left'
             elif y > 0:
-                self.animation_direction = 'up'
-            elif y < 0:
                 self.animation_direction = 'down'
+            elif y < 0:
+                self.animation_direction = 'up'
 
         self.rect.center += self.vector * self.speed
         self.rect.clamp_ip(self.play_rect)
@@ -175,5 +173,5 @@ class Brain(Base):
 
     def shoot(self):
         """ Fire the guns. """
-        self.shoot_delay = randint(*self.shoot_delays)
+        self.shoot_delay = self.random_int(self.shoot_delays[0], self.shoot_delays[1] + 1)
         self.engine._add_enemy(CruiseMissile(self.engine, center=self.rect.center))

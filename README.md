@@ -1,115 +1,73 @@
 # Robotron 2084 Gym Environment
 
-This is a remake of the XBox (and older, using xbox graphics) game of Robotron 2084.
+A faithful recreation of Robotron 2084 (Xbox 360 / arcade version) as a [Gymnasium](https://gymnasium.farama.org/) environment for reinforcement learning research.
 
 ![Robotron Game](resources/robotron.png "Robotron 2084")
 
-Working on simulating the XBox look and feel in an attempt to train a model and then test it on the console itself.
+The goal is to train an RL agent on this environment and deploy it to play the Xbox 360 version on real hardware.
 
-(See [my robotron player](https://github.com/stridera/robotron))
-
-**Quick Links:**
-- 📖 [Quick Start Guide](QUICKSTART.md) - Get running in 60 seconds
-- 💻 [Examples](examples/) - Practical code samples
-- 🏗️ [Architecture](CLAUDE.md) - Developer documentation
-- 🤝 [Contributing](CONTRIBUTING.md) - Development guide
-
-## Features
-
-✅ **Gymnasium-compliant** - Works with modern RL frameworks
-✅ **Fully deterministic** - Seeded reproducibility for experiments
-✅ **Performance optimized** - Headless mode with off-screen rendering
-✅ **Visual observations** - Full RGB observations even in headless mode
-✅ **Type-safe** - Comprehensive type hints throughout
-✅ **Well-tested** - Examples and test coverage
-✅ **Configurable** - YAML-based game parameters
+(See [the training project](https://github.com/stridera/robotron) for RL training code.)
 
 ## Installation
 
-### Option 1: Poetry (Recommended)
-
-[Poetry](https://python-poetry.org/) provides better dependency management and virtual environment handling:
+### Poetry (Recommended)
 
 ```bash
-# Install Poetry (if not already installed)
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Clone repository
 git clone git@github.com:stridera/robotron-2084.git
 cd robotron-2084/
 
-# Install dependencies (creates virtual environment automatically)
 poetry install
-
-# Run the game
-poetry run python main.py
-
-# Or activate the virtual environment
 poetry shell
-python main.py
 ```
 
-### Option 2: pip
-
-Traditional installation using pip:
+### pip
 
 ```bash
-# Install Python 3.10+ (Ubuntu example)
-sudo apt install python3.10 python3.10-venv
-
-# Clone repository
 git clone git@github.com:stridera/robotron-2084.git
 cd robotron-2084/
 
-# Create and activate virtual environment
-python3.10 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-
-# Install requirements
 pip install -r requirements.txt
-
-# Run the game
-python main.py
 ```
 
-### Requirements
+**Requirements:** Python 3.10+ | Linux, macOS, or Windows (WSL recommended)
 
-- **Python:** 3.10, 3.11, or 3.12
-- **OS:** Linux, macOS, or Windows (with WSL recommended)
+## Playing as a Human
 
-## Configs
+```bash
+python main.py [options]
+```
 
-Everything is configurable. You can either modify `robotron/engine/config.yaml` directly or copy it and provide it to the engine via the `config_path` argument. You can use this to change the number of enemies per level, how fast enemies move, or how many bullets/enemies they spawn.
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--level` | 1 | Starting level (1-40) |
+| `--lives` | 3 | Number of lives |
+| `--fps` | 30 | Frame rate |
+| `--godmode` | off | Invincibility (can't die) |
 
-The current one is optimized for machine learning and has some changes from live. (Like, we don't gain extra lives.)
-The `config.yaml.default` file is as close to the real game as I could make it. Feel free to copy it over to get back those functions.
+**Controls:**
+- **WASD** - Move
+- **IJKL** - Shoot
+- **Enter** - Restart
+- **Escape / Q** - Quit
+- **Gamepad** - Left stick to move, face buttons (A/B/X/Y) to shoot
 
-## Gymnasium Environment
-
-This environment follows the [Gymnasium](https://gymnasium.farama.org/) API (the maintained successor to OpenAI Gym). It's fully compatible with modern RL frameworks.
+## Using as a Gymnasium Environment
 
 ### Quick Start
 
 ```python
 from robotron import RobotronEnv
 
-# Create environment for RL training
-env = RobotronEnv(
-    level=1,              # Starting level
-    lives=3,              # Number of lives
-    fps=0,                # 0 = max speed for training
-    headless=True,        # No display (faster training)
-    always_move=True,     # Reduced action space (64 vs 81)
-    render_mode=None,     # 'human' or 'rgb_array'
-)
+env = RobotronEnv(headless=True, fps=0, always_move=True)
+obs, info = env.reset(seed=42)
 
-# Standard Gymnasium API
-obs, info = env.reset(seed=42)  # Seeded for reproducibility
-terminated = False
-
-while not terminated:
-    action = env.action_space.sample()  # Your agent here
+while True:
+    action = env.action_space.sample()  # Replace with your agent
     obs, reward, terminated, truncated, info = env.step(action)
+    if terminated:
+        break
 
 env.close()
 ```
@@ -120,186 +78,247 @@ env.close()
 |-----------|------|---------|-------------|
 | `level` | int | 1 | Starting level (1-40) |
 | `lives` | int | 3 | Number of lives |
-| `fps` | int | 0 | Frames per second (0 = unlimited, best for training) |
-| `headless` | bool | True | Off-screen rendering (no display window, still returns observations) |
-| `always_move` | bool | False | Reduce action space from 81 to 64 (no-op removed) |
-| `godmode` | bool | False | Invincibility (for debugging) |
+| `fps` | int | 0 | Frames per second (0 = unlimited for training) |
+| `headless` | bool | True | Off-screen rendering (no window, still returns observations) |
+| `always_move` | bool | False | Reduce action space from 81 to 64 (removes no-op) |
+| `godmode` | bool | False | Invincibility for debugging |
 | `config_path` | str | None | Path to custom config YAML |
-| `render_mode` | str | None | 'human' or 'rgb_array' |
-| `seed` | int | None | Random seed (pass to `reset()` instead) |
+| `render_mode` | str | None | `'human'` (pygame window) or `'rgb_array'` |
 
 ### Action Space
 
-**Default (Discrete 81):**
-- Combines movement (9 directions) and shooting (9 directions)
-- Action encoding: `action = movement * 9 + shooting`
-- Directions: 0=None, 1=Up, 2=UpRight, 3=Right, 4=DownRight, 5=Down, 6=DownLeft, 7=Left, 8=UpLeft
+The action space combines movement and shooting into a single discrete value:
 
-**With `always_move=True` (Discrete 64):**
-- Removes no-movement option for reduced action space
-- Action encoding: `action = movement * 8 + shooting` (movements and shooting are 0-7)
+```
+action = movement_direction * num_directions + shoot_direction
+```
+
+**Default (`always_move=False`): Discrete(81)**
+- 9 movement directions x 9 shooting directions
+- Direction encoding: 0=None, 1=Up, 2=UpRight, 3=Right, 4=DownRight, 5=Down, 6=DownLeft, 7=Left, 8=UpLeft
+
+**With `always_move=True`: Discrete(64)**
+- 8 movement directions x 8 shooting directions (no-op removed from both)
+- Same direction encoding but starting at 1
 
 ### Observation Space
 
-- **Type:** `Box(0, 255, (height, width, 3), uint8)`
-- **Shape:** RGB image of play area (default: 492×665×3)
-- **Values:** Cropped view of the game arena
+- **Type:** `Box(0, 255, (492, 665, 3), uint8)` — RGB image of the play area
+- Cropped to just the game arena (no score/UI chrome)
 
 ### Rewards
 
-- **Score delta:** `(new_score - old_score) / 100.0`
-- **Death penalty:** `-1.0`
-- **Family bonus:** Progressive (1k, 2k, 3k, 4k, 5k max per level)
+| Event | Reward |
+|-------|--------|
+| Kill enemy | `points / 100.0` (e.g. Grunt=1.0, Brain=5.0) |
+| Collect family | `1000-5000 / 100.0` (progressive per wave) |
+| Player death | `-1.0` |
 
 ### Info Dictionary
 
-Returns detailed state information:
+Each `step()` and `reset()` returns an info dict:
 
 ```python
 {
-    'score': int,        # Current score
+    'score': int,        # Total score
     'level': int,        # Current level (0-indexed)
     'lives': int,        # Lives remaining
-    'family': int,       # Family members remaining
-    'data': List[Tuple]  # [(x, y, sprite_name), ...] for all sprites
+    'family': int,       # Family members remaining on this wave
+    'data': list         # [(x, y, 'ClassName'), ...] for all sprites
 }
 ```
 
-### API Methods
+The `data` field provides structured sprite positions relative to the play area, useful for non-vision agents or reward shaping.
 
-#### `reset(seed=None, options=None)`
+## RL Training Integration
 
-Resets the environment to initial state.
+### Stable Baselines3
 
-**Arguments:**
-- `seed` (int, optional): Random seed for reproducibility
-- `options` (dict, optional): Additional reset options
-
-**Returns:**
-- `observation` (ndarray): Initial game state image
-- `info` (dict): Initial state information
-
-**Example:**
 ```python
-obs, info = env.reset(seed=42)  # Reproducible reset
+from stable_baselines3 import PPO
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack
+from stable_baselines3.common.atari_wrappers import ClipRewardEnv
+from gymnasium.wrappers import GrayscaleObservation, ResizeObservation
+from robotron import RobotronEnv
+
+def make_env(seed):
+    def _init():
+        env = RobotronEnv(
+            headless=True,
+            fps=0,
+            always_move=True,
+            lives=5,
+            config_path='path/to/training_config.yaml',
+        )
+        env = GrayscaleObservation(env, keep_dim=True)
+        env = ResizeObservation(env, shape=(84, 84))
+        env.reset(seed=seed)
+        return env
+    return _init
+
+# 8 parallel environments
+env = SubprocVecEnv([make_env(seed=i) for i in range(8)])
+env = VecFrameStack(env, n_stack=4)
+
+model = PPO("CnnPolicy", env, verbose=1)
+model.learn(total_timesteps=10_000_000)
 ```
 
-#### `step(action)`
+### Training Config Recommendations
 
-Execute one game step with the given action.
+For RL training, use a config that disables visual effects and transition pauses (wasted frames where the agent can't act):
 
-**Arguments:**
-- `action` (int): Action in range [0, action_space.n)
-
-**Returns:**
-- `observation` (ndarray): Game state image
-- `reward` (float): Reward for this step
-- `terminated` (bool): True if game over (all lives lost)
-- `truncated` (bool): Always False (no time limit)
-- `info` (dict): State information
-
-**Example:**
-```python
-obs, reward, terminated, truncated, info = env.step(action)
-```
-
-#### `render()`
-
-Render the environment (if `render_mode` is set).
-
-**Returns:**
-- `ndarray` if `render_mode='rgb_array'`
-- `None` if `render_mode='human'` (displays via pygame)
-
-#### `close()`
-
-Clean up environment resources.
-
-```python
-env.close()  # Important: call when done!
-```
-
-### Reproducibility & Seeding
-
-The environment supports full deterministic reproducibility:
-
-```python
-# Create two identical environments
-env1 = RobotronEnv(headless=True)
-env2 = RobotronEnv(headless=True)
-
-# Reset with same seed
-obs1, _ = env1.reset(seed=42)
-obs2, _ = env2.reset(seed=42)
-
-# Same actions produce identical results
-for _ in range(100):
-    action = env1.action_space.sample()
-    obs1, r1, d1, t1, info1 = env1.step(action)
-    obs2, r2, d2, t2, info2 = env2.step(action)
-    assert np.array_equal(obs1, obs2)  # Identical observations
-```
-
-### Performance Tips
-
-For maximum training speed:
-
-```python
-env = RobotronEnv(
-    fps=0,              # No frame rate limiting
-    headless=True,      # Off-screen rendering (no display window)
-    always_move=True,   # Smaller action space
-)
-```
-
-**Note:** Headless mode renders to an off-screen surface, so you still get full visual observations for training without the overhead of displaying to screen.
-
-### Advanced: Custom Configuration
-
-Create a custom `config.yaml` to modify game behavior:
-
-```python
-env = RobotronEnv(config_path='path/to/custom_config.yaml')
+```yaml
+# In your training config YAML:
+effects_enabled: false
+warp_in_duration: 0
+death_duration: 0
+level_complete_duration: 0
 ```
 
 See `robotron/engine/config.yaml` for all available options.
 
+### Key Tips
+
+- **`fps=0`** and **`headless=True`** for maximum throughput (~500-1000 FPS)
+- **`always_move=True`** reduces the action space from 81 to 64
+- **Multiple lives** (e.g. `lives=5`) lets the agent learn from mistakes
+- **Seeding**: pass `seed` to `env.reset()` for reproducibility
+- **Frame stacking**: stack 4 frames for temporal information (velocity, direction)
+- **Grayscale + resize** to 84x84 matches standard Atari preprocessing
+
+## Configuration
+
+All game parameters are controlled via YAML config files. Pass a custom config with:
+
+```python
+env = RobotronEnv(config_path='my_config.yaml')
+```
+
+### Key Config Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `effects_enabled` | `true` | Border color cycling, warp-in tinting, level complete flash |
+| `warp_in_duration` | `30` | Frames for enemy warp-in animation (0 to disable) |
+| `death_duration` | `30` | Frames to pause on player death (0 to disable) |
+| `level_complete_duration` | `20` | Frames to pause after clearing a wave (0 to disable) |
+| `extra_life_score` | `-1` | Points per extra life (-1 to disable) |
+
+### Per-Entity Config
+
+Each enemy type has configurable speed, score value, spawn rates, etc:
+
+```yaml
+grunt:
+    score: 100
+    speed: 7
+    move_delay: [5, 25]        # Random delay range between moves
+    speed_up_interval: 300     # Frames between acceleration steps
+    min_move_delay: 1          # Fastest possible move delay
+
+sphereoid:
+    score: 1000
+    spawn_counts: [1, 5]       # Random range of enforcers to spawn
+    max_active_spawns: 8       # Max enforcers on screen at once
+```
+
+### Provided Configs
+
+| File | Purpose |
+|------|---------|
+| `robotron/engine/config.yaml` | Default — close to arcade with effects enabled |
+| `robotron/engine/config.yaml.default` | Original arcade-accurate settings |
+
+### Waves
+
+Each wave defines the enemy composition as a 9-element list:
+
+```yaml
+waves:
+    # [Grunts, Electrodes, Hulks, Brains, Sphereoids, Quarks, Mommies, Daddies, Mikeys]
+    - [15, 5, 0, 0, 0, 0, 1, 1, 0]   # Wave 1
+    - [17, 15, 5, 0, 1, 0, 1, 1, 1]   # Wave 2
+    # ... up to 40 waves, then repeats from wave 20
+```
+
+## Game Mechanics
+
+### Entities
+
+| Entity | Behavior | Score |
+|--------|----------|-------|
+| **Grunt** | Chases player, speeds up over time | 100 |
+| **Electrode** | Stationary obstacle, kills grunts on contact | 25 |
+| **Hulk** | Immortal, moves randomly, crushes family/electrodes, knocked back by bullets | 0 |
+| **Brain** | Flies toward family, brainwashes them into Progs, shoots cruise missiles | 500 |
+| **Sphereoid** | Flies in wavy patterns, spawns Enforcers (max 8 on screen) | 1000 |
+| **Enforcer** | Flies toward player, shoots predictive sparks | 350 |
+| **Quark** | Moves diagonally, spawns Tanks (max 8 on screen) | 1000 |
+| **Tank** | Drives toward player, shoots bouncing shells | 350 |
+| **Family** | Mommy/Daddy/Mikey — rescue for progressive bonus (1k-5k) | 1000-5000 |
+| **Prog** | Brainwashed human, chases player | 200 |
+
+### Level Progression
+
+- Clear all killable enemies (Grunts, Brains, Sphereoids, Enforcers, Quarks, Tanks, Progs) to advance
+- 40 waves, then repeats from wave 20
+- Family collection bonus resets each wave or on death
+
+### Spawner Mechanics
+
+Sphereoids and Quarks are generators that spawn Enforcers and Tanks respectively:
+- Each generator spawns a random number of enemies (configurable, default 1-5)
+- **Max 8 active spawns** on screen at once per type — if slots are full, the generator waits (this is a known exploit in the arcade)
+- When a generator exhausts its spawns, it vanishes but stays alive until all its spawns are destroyed
+- On player death: all spawns are killed, generators reappear with fresh spawn counts
+
+## Reproducibility
+
+Full deterministic replay with seeding:
+
+```python
+env1 = RobotronEnv(headless=True)
+env2 = RobotronEnv(headless=True)
+
+obs1, _ = env1.reset(seed=42)
+obs2, _ = env2.reset(seed=42)
+
+for _ in range(100):
+    action = 42
+    obs1, _, _, _, _ = env1.step(action)
+    obs2, _, _, _, _ = env2.step(action)
+    assert (obs1 == obs2).all()  # Identical
+```
+
 ## Examples
 
-Check out the [`examples/`](examples/) directory for practical code samples:
+See [`examples/`](examples/) for runnable code:
 
-- **`basic_usage.py`** - Getting started with the environment
-- **`reproducibility_demo.py`** - Proving deterministic seeding works
-- **`performance_comparison.py`** - Benchmarking headless vs. rendered modes
-- **`custom_config.py`** - Creating custom game configurations
+- **`basic_usage.py`** — Gymnasium API basics
+- **`reproducibility_demo.py`** — Proving deterministic seeding
+- **`performance_comparison.py`** — Headless vs rendered benchmarks
+- **`custom_config.py`** — Custom game configurations
 
-Run any example:
 ```bash
 python examples/basic_usage.py
 ```
 
-## Todo
+## Development
 
-- [x] Create a pygame screen and draw the play area square.
-- [x] Read the stylesheet and setup sprites.
-- [x] Parse the wave info.
-- [x] Add the player to the center.
-  - [x] Allow him to run around and shoot bullets.
-- [x] Add Grunts.
-  - [x] Grunts run toward the player and they move sporadically.
-  - [ ] Grunts speed up as the time advances on a stage.
-- [x] Add Electrodes.
-  - [x] Unlike companion cubes, Electrodes will stab you. Electrodes kill grunts and player.
-- [x] Add Family Members.
-- [x] Add Hulks.
-- [x] Add Brains.
-- [x] Add Spheroids.
-- [x] Add Enforcers.
-- [x] Add Quarks.
-- [x] Add Tanks.
-- [x] Properly handle rolling over level 40. (Waves restart at 21 and repeat.)
-- [ ] Add flashing effects similar to in game.
-- [ ] Add warp-in/warp-out effects.
+```bash
+# Run tests
+poetry run pytest
+
+# Format
+poetry run black .
+
+# Lint
+poetry run ruff check .
+
+# Type check
+poetry run mypy robotron/
+```
 
 ## Attributions and Thanks
 
